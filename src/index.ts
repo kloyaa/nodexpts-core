@@ -1,8 +1,9 @@
 import express, { Application } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import exampleRoute from './routes/example.route';
 import connectDB from '../__core/utils/db.util';
+
+import authRoute from './routes/auth.route';
 
 const app: Application = express();
 
@@ -12,7 +13,7 @@ app.use(cors()); // Enable CORS for all routes
 app.use(express.json());
 
 // Routes
-app.use('/example', exampleRoute);
+app.use('/api', authRoute);
 
 // Connect to MongoDB
 connectDB();

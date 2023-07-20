@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import connectDB from '../__core/utils/db.util';
 
 import authRoute from './routes/auth.route';
+import profileRoute from './routes/profile.route';
 
 const app: Application = express();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api', authRoute);
+app.use('/api', profileRoute);
 
 // Connect to MongoDB
 connectDB();

@@ -19,5 +19,6 @@ export interface IProfile extends Document {
     address: string;
     contactNumber: string;
     gender: 'male' | 'female' | 'other';
+    verified: boolean;
     // Other profile properties
 }

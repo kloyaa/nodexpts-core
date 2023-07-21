@@ -40,8 +40,12 @@ export const statuses = {
         code: "0054",
     },
     "0055": {
-        message: "User not found.",
+        message: "Account not verified.",
         code: "0055",
+    },
+    "0056": {
+        message: "User not found.",
+        code: "0056",
     },
     /**
      * @alias Profile
@@ -60,8 +64,12 @@ export const statuses = {
         code: "0102",
     },
     "0103": {
-        message: "Profile not found.",
+        message: "Profile already exist.",
         code: "0103",
+    },
+    "0104": {
+        message: "Profile not found.",
+        code: "0104",
     },
     "0900": {
         message: "Something went wrong. Please try again later.",

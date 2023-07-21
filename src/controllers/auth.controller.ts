@@ -9,6 +9,7 @@ import { generateJwt } from '../../__core/utils/jwt.util';
 import { encrypt } from '../../__core/utils/crypto.util';
 import { getAwsSecrets } from '../../__core/services/aws.service';
 import { isEmpty } from '../../__core/utils/methods.util';
+import { Profile } from '../../__core/models/profile.model';
 
 export const login = async (req: Request, res: Response) => {
     try {
@@ -40,7 +41,6 @@ export const login = async (req: Request, res: Response) => {
         }
 
         // Compare the provided password with the stored hashed password
-        console.log(password, user.password)
         const isPasswordValid: boolean = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             // Incorrect password
@@ -48,14 +48,21 @@ export const login = async (req: Request, res: Response) => {
             return;
         }
 
+        // Check if user profile exist and if verified
+        const profile = await Profile.findOne({ user: user._id }).exec();
+        if(profile && !profile.verified) {
+            res.status(401).json(statuses["0055"]);
+            return;
+        }
+
         // Generate a JWT token for authentication
         // Return the access token in the response
-        res.status(200).json({ 
+        return res.status(200).json({ 
             ...statuses["00"], 
             data: encrypt(generateJwt(user._id, secrets?.JWT_SECRET_KEY as string), secrets?.CRYPTO_SECRET!)
         });
     } catch (error) {
-        console.log(error)
+        console.log('@login error', error)
         res.status(500).json(error);
     }
 };
@@ -101,6 +108,7 @@ export const register = async (req: Request, res: Response) => {
     
         res.status(201).json(statuses["0050"]);
     } catch (error) {
+        console.log('@register error', error)
         res.status(500).json(statuses["0900"]);
     }
 }

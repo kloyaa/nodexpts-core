@@ -32,6 +32,10 @@ const profileSchema = new Schema<IProfile>({
         type: String, enum: ['male', 'female', 'other'], 
         required: false 
     },
+    verified: { 
+        type: Boolean, 
+        default: false 
+    },
     // Other profile properties
 }, { timestamps: true });
 

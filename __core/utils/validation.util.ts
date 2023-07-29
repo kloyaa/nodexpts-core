@@ -40,4 +40,17 @@ export class RequestValidator {
 
         return error;
     }
+
+    createBetAPI(body: any) {
+        const { error } = Joi.object({
+            type: Joi.string().valid("3D", "STL").required(),
+            schedule: Joi.string().required(),
+            time: Joi.string().required(),
+            amount: Joi.number().required(),
+            rambled: Joi.boolean().required(),
+        }).validate(body);
+
+        return error;
+    }
+    
 }

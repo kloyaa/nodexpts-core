@@ -10,11 +10,16 @@ const betSchema = new Schema<IBet>({
     type: {
         type: String,
         required: true,
-        enum: ["S3", "STL"]
+        enum: ["3D", "STL"]
     },
     schedule: {
         type: Date, 
         required: true 
+    },
+    time: {
+        type: String, 
+        required: true,
+        enum: ["10:30 AM", "3:00 PM", "8:00 PM", "2:00 PM", "5:00 PM", "9:00 PM"]
     },
     amount: {
         type: Number,
@@ -26,4 +31,4 @@ const betSchema = new Schema<IBet>({
     }
 }, { timestamps: true });
 
-export const User = model<IBet>('Bet', betSchema);
+export const Bet = model<IBet>('Bet', betSchema);

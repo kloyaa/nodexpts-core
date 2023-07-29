@@ -5,9 +5,9 @@ const MONGODB_URI = 'mongodb://127.0.0.1:27017/db_swertesaya';
 const connectDB = async () => {
   try {
     await mongoose.connect(MONGODB_URI);
-    console.log('Connected to MongoDB');
+    console.log('Database connection success');
   } catch (error) {
-    console.error('Failed to connect to MongoDB:', error);
+    console.error('Database connection failed', error);
     process.exit(1);
   }
 };

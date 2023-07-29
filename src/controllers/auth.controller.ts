@@ -10,6 +10,7 @@ import { encrypt } from '../../__core/utils/crypto.util';
 import { getAwsSecrets } from '../../__core/services/aws.service';
 import { isEmpty } from '../../__core/utils/methods.util';
 import { Profile } from '../../__core/models/profile.model';
+import { isClientVerified } from '../../__core/repositories/user.repositories';
 
 export const login = async (req: Request, res: Response) => {
     try {
@@ -49,8 +50,8 @@ export const login = async (req: Request, res: Response) => {
         }
 
         // Check if user profile exist and if verified
-        const profile = await Profile.findOne({ user: user._id }).exec();
-        if(profile && !profile.verified) {
+        const isVerified = await isClientVerified(user._id);
+        if(!isVerified) {
             res.status(401).json(statuses["0055"]);
             return;
         }

@@ -40,7 +40,7 @@ export const statuses = {
         code: "0054",
     },
     "0055": {
-        message: "Account not verified.",
+        message: "Account not verified, Please contact the administrator.",
         code: "0055",
     },
     "0056": {

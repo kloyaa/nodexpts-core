@@ -68,7 +68,7 @@ export const statuses = {
         code: "0103",
     },
     "0104": {
-        message: "Profile not found. Please create and try again.",
+        message: "Profile not found. Please create first and try again.",
         code: "0104",
     },
     "0900": {

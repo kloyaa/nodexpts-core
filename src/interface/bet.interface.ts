@@ -6,4 +6,5 @@ export interface IBet extends Document {
     schedule: Date;
     amount: number;
     rambled: boolean;
+    time: "10:30 AM" | "3:00 PM" | "8:00 PM" | "2:00 PM" | "5:00 PM" | "9:00 PM";
 }

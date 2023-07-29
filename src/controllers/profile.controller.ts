@@ -30,7 +30,8 @@ export const create = async (req: Request & { user?: any }, res: Response): Prom
             res.status(404).json(statuses["0103"]);
             return;
         }
-      // Create a new Profile document and associate it with the user
+        
+        // Create a new Profile document and associate it with the user
         const newProfile: IProfile = new Profile({
             user: user._id,
             firstName,
@@ -41,7 +42,7 @@ export const create = async (req: Request & { user?: any }, res: Response): Prom
             gender,
         });
 
-      // Save the new Profile document to the database
+        // Save the new Profile document to the database
         await newProfile.save();
 
         res.status(201).json(statuses["0100"]);

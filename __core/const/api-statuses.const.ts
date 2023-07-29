@@ -28,7 +28,7 @@ export const statuses = {
         code: "0051",
     },
     "0052": {
-        message: "Account already registered.",
+        message: "Account already registered, Please try logging in.",
         code: "0052",
     },
     "0053": {
@@ -68,7 +68,7 @@ export const statuses = {
         code: "0103",
     },
     "0104": {
-        message: "Profile not found.",
+        message: "Profile not found. Please create and try again.",
         code: "0104",
     },
     "0900": {

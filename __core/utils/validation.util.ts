@@ -32,4 +32,12 @@ export class RequestValidator {
 
         return error;
     }
+
+    getProfileByLoginIdAPI(query: any) {
+        const { error } = Joi.object({
+            loginId: Joi.string().required(),
+        }).validate(query);
+
+        return error;
+    }
 }

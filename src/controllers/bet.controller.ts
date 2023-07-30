@@ -1,9 +1,9 @@
-import mongoose from 'mongoose'; // Import the mongoose library
+import mongoose, { Cursor } from 'mongoose'; // Import the mongoose library
 import { Request, Response } from "express";
-import { Bet } from "../models/bet.model";
+import { Bet, NumberStats } from "../models/bet.model";
 import { RequestValidator } from "../../__core/utils/validation.util";
 import { statuses as BetStatuses } from "../const/api-statuses.const";
-import { IBet } from '../interface/bet.interface';
+import { IBet, TNumbeClassification } from '../interface/bet.interface';
 import { emitter } from '../events/activity.event';
 import { IActivity } from '../../__core/interfaces/schema.interface';
 import { BetActivityType, BetEventName } from '../enum/activity.enum';
@@ -24,9 +24,12 @@ export const placeBet = async (req: Request & { user?: any }, res: Response) => 
 
         const { type, schedule, time, amount, rambled, number } = req.body;
 
-        const isSoldOut = await isSoldOutNumber(number);
-        if(isSoldOut) {
+        const isSoldOut = await isSoldOutNumber(number, schedule, time, rambled);
+        if(isSoldOut?.full) {
             return res.status(403).json(BetStatuses["0312"]);
+        }
+        if((isSoldOut?.total + amount) > isSoldOut?.limit!) {
+            return res.status(403).json(BetStatuses["0313"]);
         }
 
         if(rambled && (Number(amount) % 6) !== 0) {
@@ -44,32 +47,140 @@ export const placeBet = async (req: Request & { user?: any }, res: Response) => 
                 ...BetStatuses["0310"], data: `Time ${validTimeFor3D.join(", ")}`
             });
         }
-        
-        // Create the new bet
-        const newBet = new Bet({
-            user: req.user.value,
-            type,
-            schedule,
-            time,
-            amount,
-            rambled,
-            number
-        });
-    
-        // Save the bet to the database
-        const savedBet = await newBet.save();
-    
-        emitter.emit(BetEventName.PLACE_BET, {
-            user: req.user.value,
-            description: BetActivityType.PLACE_BET,
-        } as IActivity);
 
-        // Return the newly created bet as the response
-        return res.status(201).json(savedBet);
+        if(rambled) {
+            const numbers = breakRambleNumbers(number);
+            const splittedValues = numbers.map((num) => ({
+                amount: amount / 6,
+                number: num,
+                user: req.user.value,
+                type,
+                schedule,
+                time,
+                rambled,
+            }));
+        
+            const [savedBet, _] = await Promise.all([
+                Bet.insertMany(splittedValues),
+                NumberStats.insertMany(splittedValues)
+            ]);
+
+            emitter.emit(BetEventName.PLACE_BET, {
+                user: req.user.value,
+                description: BetActivityType.PLACE_BET,
+            } as IActivity);
+
+            return res.status(201).json(savedBet);
+        } else {
+            const newBet = new Bet({
+                user: req.user.value,
+                type,
+                schedule,
+                time,
+                amount,
+                rambled,
+                number
+            });
+            const newNumberStat = new NumberStats({
+                schedule,
+                amount,
+                time,
+                number,
+                user: req.user.value,
+            });
+
+            // Save the bet to the database
+            const [savedBet, _] = await Promise.all([
+                newBet.save(),
+                newNumberStat.save()
+            ]);
+
+            emitter.emit(BetEventName.PLACE_BET, {
+                user: req.user.value,
+                description: BetActivityType.PLACE_BET,
+            } as IActivity);
+
+            // Return the newly created bet as the response
+            return res.status(201).json(savedBet);
+        }
+        
         } catch (error) {
             console.log('@createBet error', error)
             res.status(500).json(error);
     }
+};
+
+export const numberStats = async (req: Request & { user?: any }, res: Response) => {
+    try {
+        const { schedule } = req.query;
+
+        const formattedSchedule = schedule 
+            ? new Date(schedule as unknown as Date).toISOString().substring(0, 10) 
+            : new Date().toISOString().substring(0, 10);
+
+        const aggregationPipeline: any[] = [
+            {
+                $lookup: {
+                    from: 'profiles', // Assuming your User collection is named 'profiles'
+                    localField: 'user',
+                    foreignField: 'user',
+                    as: 'profile',
+                },
+            },
+            {
+                $unwind: '$profile',
+            },
+            {
+                $match: {
+                    $expr: {
+                        $eq: [
+                            { $dateToString: { format: '%Y-%m-%d', date: '$schedule', timezone: 'UTC' } },
+                            formattedSchedule,
+                        ],
+                    }
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    amount: 1,
+                    number: 1,
+                    profile: {
+                        firstName: 1,
+                        lastName: 1,
+                        address: 1,
+                        contactNumber: 1,
+                        gender: 1
+                    }
+                },
+            },
+        ];
+    
+        const result = await NumberStats.aggregate(aggregationPipeline);
+        return res.json(result);
+    } catch (error) {
+        console.error('Error while merging amount per number:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+const breakRambleNumbers = (input: string): string[] => {
+    const result: string[] = [];
+
+    const permute = (str: string, prefix: string = '') => {
+    if (str.length === 0) {
+        result.push(prefix);
+        return;
+    }
+
+    for (let i = 0; i < str.length; i++) {
+        permute(str.slice(0, i) + str.slice(i + 1), prefix + str[i]);
+    }
+    };
+
+    permute(input);
+
+    return result;
 };
 
 export const getAll = async (req: Request & { user?: any }, res: Response) => {
@@ -165,51 +276,38 @@ export const getAll = async (req: Request & { user?: any }, res: Response) => {
     }
 }
 
-const isSoldOutNumber = async (number: string): Promise<boolean> => {
+const isSoldOutNumber = async (number: string, schedule: Date, time: string, ramble: boolean): Promise<{ full: boolean, total: number, limit: number } | undefined> => {
     try {
         const today = new Date();
         today.setUTCHours(0, 0, 0, 0); // Set the time to 00:00:00.0000 UTC for today
 
-        const pipeline = [
+        let pipeline: any[] = [
             {
                 $match: {
-                    schedule: {
-                        $gte: today,
-                        $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000), // Next day (00:00:00.0000 UTC of the next day)
-                    },
-                    number
-                },
-            },
-            {
-                $project: {
-                    type: 1,
-                    schedule: {
-                        $dateToString: {
-                            date: '$schedule',
-                            format: '%Y-%m-%d',
-                            timezone: 'UTC',
-                        },
-                    },
-                    time: 1,
-                    amount: 1,
-                    rambled: 1,
-                    number: 1,
+                    time,
+                    number,
+                    $expr: {
+                        $eq: [
+                            { $dateToString: { format: '%Y-%m-%d', date: '$schedule', timezone: 'UTC' } },
+                            new Date(schedule as unknown as Date).toISOString().substring(0, 10),
+                        ],
+                    }
                 },
             },
         ];
 
-        const result: IBet[] = await Bet.aggregate(pipeline);
+        const result: IBet[] = await NumberStats.aggregate(pipeline);
         const total = getNumbersTotalAmount(result);
-        const limit = getNumberAndLimitClassification(number).limit;
-
-        return total >= limit;
+        const limit = getNumberAndLimitClassification(number, ramble).limit;
+        
+        console.log({ full: total >= limit, limit, total })
+        return { full: total >= limit, limit, total };
     } catch (error) {
         console.log('@isSoldOut error', error);
-        return false;
     }
 };
 
-const getNumbersTotalAmount = (arr: IBet[]): number => {
+export const getNumbersTotalAmount = (arr: IBet[]): number => {
     let totalAmount = 0;
     for (const obj of arr) {
         totalAmount += obj.amount;
@@ -217,17 +315,21 @@ const getNumbersTotalAmount = (arr: IBet[]): number => {
     return totalAmount;
 }
 
-const getNumberAndLimitClassification = (number: string): { class: string, limit: number } => {
+const getNumberAndLimitClassification = (number: string, ramble?: boolean): { class: TNumbeClassification, limit: number } => {
     const digits: number[] = number.split("").map(Number);
     const digitCounts: { [key: number]: number } = digits.reduce(
         (count: { [key: number]: number }, digit: number) => {
             count[digit] = (count[digit] || 0) + 1;
             return count;
         },{});
-
+    
+    if(ramble) {
+        return { class: "ramble", limit: 900 };;
+    }
+    
     const numDigits: number = digits.length;
     if (Object.values(digitCounts).every((count) => count === 1)) {
-        return { class: "unique", limit: 150 };
+        return { class: "normal", limit: 150 };
     } else if (Object.values(digitCounts).some((count) => count === numDigits)) {
         return { class: "triple", limit: 100 };;
     } else {

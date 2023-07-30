@@ -3,6 +3,8 @@ import { IProfile } from '../../__core/interfaces/schema.interface';
 import { Profile } from '../../__core/models/profile.model';
 import { statuses } from '../../__core/const/api-statuses.const';
 import { RequestValidator } from '../../__core/utils/validation.util';
+import { Bet } from '../models/bet.model';
+import { getNumbersTotalAmount } from './bet.controller';
 
 // Patch request to update the 'verified' field of a profile
 export const updateProfileVerifiedStatus = async (req: Request, res: Response) => {
@@ -37,3 +39,20 @@ export const updateProfileVerifiedStatus = async (req: Request, res: Response) =
         res.status(500).json(error);
     }
 };
+
+export const getDailyTotal = async (req: Request, res: Response) => {
+    try {
+        const rambled = await Bet.find({ rambled: true}).exec();
+        const target = await Bet.find({ rambled: false}).exec();
+
+        return res.status(200).json({
+            rambled: getNumbersTotalAmount(rambled),
+            target: getNumbersTotalAmount(target)
+        });
+    } catch (error) {
+        console.log('@getAll error', error)
+        res.status(500).json(error);
+    }
+
+    return { ramble: 100, target: 100 }
+}

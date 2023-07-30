@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { IBet } from "../interface/bet.interface";
+import { IBet, INumberStats } from "../interface/bet.interface";
 
 const betSchema = new Schema<IBet>({
     user: { 
@@ -35,4 +35,30 @@ const betSchema = new Schema<IBet>({
     }
 }, { timestamps: true });
 
+const numberSatsSchema = new Schema<INumberStats>({
+    user: { 
+        type: Schema.Types.ObjectId, 
+        ref: 'User', 
+        required: true 
+    }, //
+    number: {
+        type: String, 
+        required: true 
+    },
+    schedule: {
+        type: Date, 
+        required: true 
+    },
+    time: {
+        type: String, 
+        required: true,
+        enum: ["10:30 AM", "3:00 PM", "8:00 PM", "2:00 PM", "5:00 PM", "9:00 PM"]
+    },
+    amount: {
+        type: Number,
+        required: true
+    },
+}, { timestamps: true });
+
+export const NumberStats = model<INumberStats>('NumberStats', numberSatsSchema);
 export const Bet = model<IBet>('Bet', betSchema);

@@ -1,4 +1,5 @@
 import Joi from "joi";
+import mongoose from 'mongoose';
 
 export class RequestValidator { 
     registerAPI(body: any) {
@@ -46,11 +47,31 @@ export class RequestValidator {
             type: Joi.string().valid("3D", "STL").required(),
             schedule: Joi.string().required(),
             time: Joi.string().required(),
-            amount: Joi.number().required(),
+            number: Joi.string().required().length(3),
+            amount: Joi.number().min(1).required(),
             rambled: Joi.boolean().required(),
         }).validate(body);
 
         return error;
     }
-    
+
+    getAllBetsAPI(query: any) {
+        const { error } = Joi.object({
+            type: Joi.string().valid("3D", "STL").optional(),
+            user: Joi.string().hex().length(24).optional(),
+            time: Joi.string().valid("10:30 AM", "3:00 PM", "8:00 PM", "2:00 PM", "5:00 PM", "9:00 PM").optional(),
+            schedule: Joi.date().iso().optional(),
+        }).validate(query);
+
+        return error;
+    }
+
+    updateProfileVerifiedStatusAPI(body: any) {
+        const { error } = Joi.object({
+            verified: Joi.boolean().required(),
+            user: Joi.string().hex().length(24)
+        }).validate(body);;
+
+        return error;
+    }
 }

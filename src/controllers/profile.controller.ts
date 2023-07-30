@@ -115,10 +115,11 @@ export const getProfileByLoginId = async (req: Request, res: Response) => {
     }
 };
 
-export const getAllActiveProfiles = async (req: Request, res: Response) => {
+export const getAllProfiles = async (req: Request, res: Response) => {
     try {
-        const pipeline = [
+        const { verified } = req.query;
 
+        const pipeline = [
             // Lookup the Profile collection to get the profile associated with the user
             {
                 $lookup: {
@@ -131,7 +132,9 @@ export const getAllActiveProfiles = async (req: Request, res: Response) => {
             // Unwind the 'profile' array to get a single object (since there's one-to-one relation)
             { $unwind: '$profile' },
                // Match only the users with verified profiles
-            { $match: { 'profile.verified': true } },
+            ...(typeof verified === 'boolean' || verified === 'true' || verified === 'false'
+               ? [{ $match: { 'profile.verified': verified === 'true' ? true : false } }]
+               : []),
             // Project only the required fields for the user and the profile
             {
                 $project: {
@@ -156,7 +159,7 @@ export const getAllActiveProfiles = async (req: Request, res: Response) => {
             res.status(200).json([]);
             return;
         }
-        return res.status(200).json(result[0]);
+        return res.status(200).json(result);
     } catch (error) {
         console.log('@getAllActiveProfiles error', error)
         res.status(500).json(error);

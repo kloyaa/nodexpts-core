@@ -12,6 +12,10 @@ const betSchema = new Schema<IBet>({
         required: true,
         enum: ["3D", "STL"]
     },
+    number: {
+        type: String, 
+        required: true 
+    },
     schedule: {
         type: Date, 
         required: true 

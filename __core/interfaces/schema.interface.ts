@@ -9,7 +9,6 @@ export interface IUser extends Document {
     updatedAt: Date;
 }
 
-
 // Define the Profile interface
 export interface IProfile extends Document {
     user: Types.ObjectId;
@@ -21,4 +20,11 @@ export interface IProfile extends Document {
     gender: 'male' | 'female' | 'other';
     verified: boolean;
     // Other profile properties
+}
+
+// Interface for the Activity document
+export interface IActivity extends Document {
+    user: Types.ObjectId;
+    description: string;
+    timestamp: Date;
 }

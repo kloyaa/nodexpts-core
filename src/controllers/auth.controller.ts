@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
 import { User } from '../../__core/models/user.model';
-import { IUser } from '../../__core/interfaces/schema.interface';
+import { IActivity, IUser } from '../../__core/interfaces/schema.interface';
 import { RequestValidator } from '../../__core/utils/validation.util';
 import { statuses } from '../../__core/const/api-statuses.const';
 import { generateJwt } from '../../__core/utils/jwt.util';
@@ -9,6 +9,8 @@ import { encrypt } from '../../__core/utils/crypto.util';
 import { getAwsSecrets } from '../../__core/services/aws.service';
 import { isEmpty } from '../../__core/utils/methods.util';
 import { isClientProfileCreated, isClientVerified } from '../../__core/repositories/user.repositories';
+import { emitter } from '../../__core/events/activity.event';
+import { ActivityType, EventName } from '../../__core/enum/activity.enum';
 
 export const login = async (req: Request, res: Response) => {
     try {
@@ -58,6 +60,11 @@ export const login = async (req: Request, res: Response) => {
             res.status(401).json(statuses["0055"]);
             return;
         }
+
+        emitter.emit(EventName.LOGIN, {
+            user: user._id,
+            description: ActivityType.LOGIN,
+        } as IActivity);
 
         // Generate a JWT token for authentication
         // Return the access token in the response
@@ -116,6 +123,12 @@ export const register = async (req: Request, res: Response) => {
             res.status(401).json(statuses["0300"]);
             return;
         }
+
+        emitter.emit(EventName.ACCOUNT_CREATION, {
+            user: createdUser._id,
+            description: ActivityType.ACCOUNT_CREATION,
+        } as IActivity);
+
         return res.status(200).json({ 
             ...statuses["0050"], 
             data: encrypt(generateJwt(createdUser._id, secrets?.JWT_SECRET_KEY as string), secrets?.CRYPTO_SECRET!)

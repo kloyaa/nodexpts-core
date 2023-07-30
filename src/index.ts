@@ -6,6 +6,7 @@ import connectDB from '../__core/utils/db.util';
 import authRoute from './routes/auth.route';
 import profileRoute from './routes/profile.route';
 import betRoute from './routes/bet.route';
+import employeeRoute from './routes/employee.route';
 
 const app: Application = express();
 
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use('/api', authRoute);
 app.use('/api', profileRoute);
 app.use('/api', betRoute);
+app.use('/api', employeeRoute);
 
 // Connect to MongoDB
 connectDB();

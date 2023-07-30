@@ -19,4 +19,8 @@ export const statuses = {
         message: "Number is already sold out.",
         code: "0312",
     },
+    "0313": {
+        message: "The amount you have entered is greater than remaining limit.",
+        code: "0313",
+    },
 }

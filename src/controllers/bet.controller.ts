@@ -7,6 +7,7 @@ import { IBet, TNumbeClassification } from '../interface/bet.interface';
 import { emitter } from '../events/activity.event';
 import { IActivity } from '../../__core/interfaces/schema.interface';
 import { BetActivityType, BetEventName } from '../enum/activity.enum';
+import { ObjectId } from 'mongodb';
 
 const validTimeForSTL = ["10:30 AM", "3:00 PM", "8:00 PM"];
 const validTimeFor3D = ["2:00 PM", "5:00 PM", "9:00 PM"];
@@ -159,28 +160,9 @@ export const numberStats = async (req: Request & { user?: any }, res: Response) 
         const result = await NumberStats.aggregate(aggregationPipeline);
         return res.json(result);
     } catch (error) {
-        console.error('Error while merging amount per number:', error);
-        return res.status(500).json({ error: 'Internal Server Error' });
+        console.error('@numberStats', error);
+        res.status(500).json(error);
     }
-};
-
-const breakRambleNumbers = (input: string): string[] => {
-    const result: string[] = [];
-
-    const permute = (str: string, prefix: string = '') => {
-    if (str.length === 0) {
-        result.push(prefix);
-        return;
-    }
-
-    for (let i = 0; i < str.length; i++) {
-        permute(str.slice(0, i) + str.slice(i + 1), prefix + str[i]);
-    }
-    };
-
-    permute(input);
-
-    return result;
 };
 
 export const getAll = async (req: Request & { user?: any }, res: Response) => {
@@ -193,19 +175,19 @@ export const getAll = async (req: Request & { user?: any }, res: Response) => {
             });
             return;
         }
-
+        
         const { time, type, schedule, user } = req.query;
-
+        
         const pipeline = [];
         if (time || type || schedule || user) {
             // Convert schedule to "YYYY-MM-DD" format for matching
             const formattedSchedule = schedule 
-                ? new Date(schedule as unknown as Date).toISOString().substring(0, 10) 
-                : new Date().toISOString().substring(0, 10);
-
+            ? new Date(schedule as unknown as Date).toISOString().substring(0, 10) 
+            : new Date().toISOString().substring(0, 10);
+            
             // If any of the query parameters is present, add the $match stage
             const matchStage: any = {};
-
+            
             if (formattedSchedule) {
                 matchStage.$expr = {
                     $eq: [
@@ -214,7 +196,7 @@ export const getAll = async (req: Request & { user?: any }, res: Response) => {
                     ],
                 };
             }
-
+            
             if (type) {
                 matchStage.type = type;
             }
@@ -262,29 +244,81 @@ export const getAll = async (req: Request & { user?: any }, res: Response) => {
                     },
                 },
             }
-        );
-
-        const result = await Bet.aggregate(pipeline);
-        if (result.length === 0) {
-            res.status(200).json([]);
-            return;
+            );
+            
+            const result = await Bet.aggregate(pipeline);
+            if (result.length === 0) {
+                res.status(200).json([]);
+                return;
+            }
+            return res.status(200).json(result);
+        } catch (error) {
+            console.log('@getAll error', error)
+            res.status(500).json(error);
         }
-        return res.status(200).json(result);
+}
+
+export const getDailyTotal = async (req: Request & { user?: any }, res: Response) => {
+    try {
+        const { schedule } = req.query;
+
+        const formattedSchedule = schedule 
+            ? new Date(schedule as unknown as Date).toISOString().substring(0, 10) 
+            : new Date().toISOString().substring(0, 10);
+
+        const aggregationPipeline: any[] = [
+            {
+                $lookup: {
+                    from: 'profiles', // Assuming your User collection is named 'profiles'
+                    localField: 'user',
+                    foreignField: 'user',
+                    as: 'profile',
+                },
+            },
+            {
+                $unwind: '$profile',
+            },
+            {
+                $match: {
+                    $expr: {
+                        $eq: [
+                            { $dateToString: { format: '%Y-%m-%d', date: '$schedule', timezone: 'UTC' } },
+                            formattedSchedule,
+                        ],
+                    },
+                    user: new ObjectId(req.user.value)
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    amount: 1,
+                    number: 1,
+                },
+            },
+        ];
+    
+        const result = await NumberStats.aggregate(aggregationPipeline);
+        return res.json({ 
+            total: getNumbersTotalAmount(result), 
+            count: result.length, 
+            date: formattedSchedule 
+        });
     } catch (error) {
-        console.log('@getAll error', error)
+        console.error('@getDailyTotal', error);
         res.status(500).json(error);
     }
 }
-
+    
 const isSoldOutNumber = async (number: string, schedule: Date, time: string, ramble: boolean): Promise<{ full: boolean, total: number, limit: number } | undefined> => {
-    try {
-        const today = new Date();
-        today.setUTCHours(0, 0, 0, 0); // Set the time to 00:00:00.0000 UTC for today
-
-        let pipeline: any[] = [
-            {
-                $match: {
-                    time,
+        try {
+            const today = new Date();
+            today.setUTCHours(0, 0, 0, 0); // Set the time to 00:00:00.0000 UTC for today
+            
+            let pipeline: any[] = [
+                {
+                    $match: {
+                        time,
                     number,
                     $expr: {
                         $eq: [
@@ -295,7 +329,7 @@ const isSoldOutNumber = async (number: string, schedule: Date, time: string, ram
                 },
             },
         ];
-
+        
         const result: IBet[] = await NumberStats.aggregate(pipeline);
         const total = getNumbersTotalAmount(result);
         const limit = getNumberAndLimitClassification(number, ramble).limit;
@@ -305,6 +339,25 @@ const isSoldOutNumber = async (number: string, schedule: Date, time: string, ram
     } catch (error) {
         console.log('@isSoldOut error', error);
     }
+};
+
+const breakRambleNumbers = (input: string): string[] => {
+    const result: string[] = [];
+
+    const permute = (str: string, prefix: string = '') => {
+    if (str.length === 0) {
+        result.push(prefix);
+        return;
+    }
+
+    for (let i = 0; i < str.length; i++) {
+        permute(str.slice(0, i) + str.slice(i + 1), prefix + str[i]);
+    }
+    };
+
+    permute(input);
+
+    return result;
 };
 
 export const getNumbersTotalAmount = (arr: IBet[]): number => {

@@ -1,13 +1,14 @@
-import mongoose, { Cursor } from 'mongoose'; // Import the mongoose library
+import mongoose from 'mongoose'; // Import the mongoose library
 import { Request, Response } from "express";
 import { Bet, NumberStats } from "../models/bet.model";
 import { RequestValidator } from "../../__core/utils/validation.util";
-import { statuses as BetStatuses } from "../const/api-statuses.const";
+import { statuses as BetStatuses, statuses } from "../const/api-statuses.const";
 import { IBet, TNumbeClassification } from '../interface/bet.interface';
 import { emitter } from '../events/activity.event';
 import { IActivity } from '../../__core/interfaces/schema.interface';
 import { BetActivityType, BetEventName } from '../enum/activity.enum';
 import { ObjectId } from 'mongodb';
+import { BetResult } from '../models/bet-result.model';
 
 const validTimeForSTL = ["10:30 AM", "3:00 PM", "8:00 PM"];
 const validTimeFor3D = ["2:00 PM", "5:00 PM", "9:00 PM"];
@@ -110,6 +111,111 @@ export const placeBet = async (req: Request & { user?: any }, res: Response) => 
             res.status(500).json(error);
     }
 };
+
+export const createBetResult = async (req: Request & { user?: any }, res: Response) => {
+    const error = new RequestValidator().createBetResultAPI(req.body)
+    if (error) {
+        res.status(400).json({ 
+            error: error.details[0].message.replace(/['"]/g, '') 
+        });
+        return;
+    }
+    const { number, schedule, time, type } = req.body;
+    
+    if(type === "STL" && !validTimeForSTL.includes(time)){
+        return res.status(403).json({
+            ...BetStatuses["0310"], data: `Time ${validTimeForSTL.join(", ")}`
+        });
+    }
+
+    if(type === "3D" && !validTimeFor3D.includes(time)){
+        return res.status(403).json({
+            ...BetStatuses["0310"], data: `Time ${validTimeFor3D.join(", ")}`
+        });
+    }
+
+    const formattedSchedule = schedule 
+        ? new Date(schedule as unknown as Date).toISOString().substring(0, 10) 
+        : new Date().toISOString().substring(0, 10);
+        
+    const aggregationPipeline: any[] = [
+        {
+            $match: {
+                $expr: {
+                    $eq: [
+                        { $dateToString: { format: '%Y-%m-%d', date: '$schedule', timezone: 'UTC' } },
+                        formattedSchedule,
+                    ],
+                },
+                time
+            },
+        },
+        {
+            $project: {
+                _id: 0,
+                schedule: 1,
+                number: 1,
+                time: 1,
+                type: 1
+            },
+        },
+    ];
+
+    const result = await BetResult.aggregate(aggregationPipeline);
+    if(result.length) {
+        return res.status(201).json(statuses["0314"]);
+    }
+    
+    const newBetResult = new BetResult({
+        number,
+        schedule,
+        time,
+        type
+    });
+
+    await newBetResult.save();
+
+    return res.status(201).json(statuses["0300"]);
+}
+
+export const getAllBetResults = async (req: Request & { user?: any }, res: Response) => {
+    const result = await BetResult.find({});
+    return res.json(result);
+}
+
+export const getBetResult = async (req: Request & { user?: any }, res: Response) => {
+    const { schedule } = req.query;
+
+    const formattedSchedule = schedule 
+        ? new Date(schedule as unknown as Date).toISOString().substring(0, 10) 
+        : new Date().toISOString().substring(0, 10);
+
+    const aggregationPipeline: any[] = [
+        {
+            $match: {
+                $expr: {
+                    $eq: [
+                        { $dateToString: { format: '%Y-%m-%d', date: '$schedule', timezone: 'UTC' } },
+                        formattedSchedule,
+                    ],
+                }
+            },
+        },
+        {
+            $project: {
+                _id: 0,
+                schedule: 1,
+                number: 1,
+                time: 1,
+                type: 1
+            },
+        },
+    ];
+
+    const result = await BetResult.aggregate(aggregationPipeline);
+    return res.json(result);
+}
+
 
 export const numberStats = async (req: Request & { user?: any }, res: Response) => {
     try {
@@ -309,7 +415,7 @@ export const getDailyTotal = async (req: Request & { user?: any }, res: Response
         res.status(500).json(error);
     }
 }
-    
+
 const isSoldOutNumber = async (number: string, schedule: Date, time: string, ramble: boolean): Promise<{ full: boolean, total: number, limit: number } | undefined> => {
         try {
             const today = new Date();

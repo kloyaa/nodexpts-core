@@ -23,4 +23,8 @@ export const statuses = {
         message: "The amount you have entered is greater than remaining limit.",
         code: "0313",
     },
+    "0314": {
+        message: "The result for the specific time and schedule has already been set. If you want to add a new one, please remove the existing entry.",
+        code: "0314",
+    },
 }

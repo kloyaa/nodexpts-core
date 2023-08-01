@@ -80,6 +80,7 @@ export const statuses = {
         message: "Something went wrong. Please try again later.",
         code: "0900",
     },
+    
     "0901": {
         message: "Incorrect format of id.",
         code: "0901",
@@ -91,5 +92,9 @@ export const statuses = {
     "0300": {
         message: "Invalid/Incorrect AWS S3 config.",
         code: "0300",
+    },
+    "500": {
+        message: "Our server is currently undergoing maintenance to improve your experience. Please try again later.",
+        code: "500",
     },
 };

@@ -11,9 +11,11 @@ const auth_route_1 = __importDefault(require("./routes/auth.route"));
 const profile_route_1 = __importDefault(require("./routes/profile.route"));
 const bet_route_1 = __importDefault(require("./routes/bet.route"));
 const employee_route_1 = __importDefault(require("./routes/employee.route"));
+const is_maintenance_mode_middleware_1 = require("../__core/middlewares/is-maintenance-mode.middleware");
 const app = (0, express_1.default)();
 const envVars = {
     ENVIRONMENT: process.env.ENVIRONMENT,
+    ENVIRONMENT_MAINTENANCE: process.env.ENVIRONMENT_MAINTENANCE,
     PORT: process.env.PORT,
     DB_CONNECTION_STRING: process.env.DB_CONNECTION_STRING,
     DB_CONNECTION_STRING_LOCAL: process.env.DB_CONNECTION_STRING_LOCAL,
@@ -30,6 +32,7 @@ app.use((0, helmet_1.default)()); // Apply standard security headers
 app.use((0, cors_1.default)()); // Enable CORS for all routes
 app.use(express_1.default.json());
 // Routes
+app.use(is_maintenance_mode_middleware_1.maintenanceModeMiddleware);
 app.use('/api', auth_route_1.default);
 app.use('/api', profile_route_1.default);
 app.use('/api', bet_route_1.default);

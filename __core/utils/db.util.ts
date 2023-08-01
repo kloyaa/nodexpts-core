@@ -1,6 +1,9 @@
+require('dotenv').config();
 import mongoose from 'mongoose';
 
-const MONGODB_URI = 'mongodb://127.0.0.1:27017/db_swertesaya';
+const MONGODB_URI = process.env.ENVIRONMENT === "development" 
+  ? process.env.DB_CONNECTION_STRING_LOCAL as string
+  : process.env.DB_CONNECTION_STRING as string;
 
 const connectDB = async () => {
   try {

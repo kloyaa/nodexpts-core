@@ -6,9 +6,8 @@
   "author": "Kolya",
   "license": "MIT",
   "scripts": {
-    "start": "node dist/src/index.js",
-    "dev": "nodemon src/index.ts",
-    "build": "tsc",
+    "start": "nodemon src/index.ts",
+    "build": "rimraf dist && tsc",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "test": "jest"

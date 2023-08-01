@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -15,7 +24,7 @@ const mongodb_1 = require("mongodb");
 const bet_result_model_1 = require("../models/bet-result.model");
 const validTimeForSTL = ["10:30 AM", "3:00 PM", "8:00 PM"];
 const validTimeFor3D = ["2:00 PM", "5:00 PM", "9:00 PM"];
-const placeBet = async (req, res) => {
+const placeBet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Check if there are any validation errors
         const error = new validation_util_1.RequestValidator().createBetAPI(req.body);
@@ -26,7 +35,7 @@ const placeBet = async (req, res) => {
             return;
         }
         const { type, schedule, time, amount, rambled, number } = req.body;
-        const isSoldOut = await isSoldOutNumber(number, schedule, time, rambled);
+        const isSoldOut = yield isSoldOutNumber(number, schedule, time, rambled);
         if (isSoldOut === null || isSoldOut === void 0 ? void 0 : isSoldOut.full) {
             return res.status(403).json(api_statuses_const_1.statuses["0312"]);
         }
@@ -37,14 +46,10 @@ const placeBet = async (req, res) => {
             return res.status(403).json(api_statuses_const_1.statuses["0311"]);
         }
         if (type === "STL" && !validTimeForSTL.includes(time)) {
-            return res.status(403).json({
-                ...api_statuses_const_1.statuses["0310"], data: `Time ${validTimeForSTL.join(", ")}`
-            });
+            return res.status(403).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0310"]), { data: `Time ${validTimeForSTL.join(", ")}` }));
         }
         if (type === "3D" && !validTimeFor3D.includes(time)) {
-            return res.status(403).json({
-                ...api_statuses_const_1.statuses["0310"], data: `Time ${validTimeFor3D.join(", ")}`
-            });
+            return res.status(403).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0310"]), { data: `Time ${validTimeFor3D.join(", ")}` }));
         }
         if (rambled) {
             const numbers = breakRambleNumbers(number);
@@ -57,7 +62,7 @@ const placeBet = async (req, res) => {
                 time,
                 rambled,
             }));
-            const [savedBet, _] = await Promise.all([
+            const [savedBet, _] = yield Promise.all([
                 bet_model_1.Bet.insertMany(splittedValues),
                 bet_model_1.NumberStats.insertMany(splittedValues)
             ]);
@@ -85,7 +90,7 @@ const placeBet = async (req, res) => {
                 user: req.user.value,
             });
             // Save the bet to the database
-            const [savedBet, _] = await Promise.all([
+            const [savedBet, _] = yield Promise.all([
                 newBet.save(),
                 newNumberStat.save()
             ]);
@@ -101,9 +106,9 @@ const placeBet = async (req, res) => {
         console.log('@createBet error', error);
         res.status(500).json(error);
     }
-};
+});
 exports.placeBet = placeBet;
-const createBetResult = async (req, res) => {
+const createBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const error = new validation_util_1.RequestValidator().createBetResultAPI(req.body);
     if (error) {
         res.status(400).json({
@@ -113,14 +118,10 @@ const createBetResult = async (req, res) => {
     }
     const { number, schedule, time, type } = req.body;
     if (type === "STL" && !validTimeForSTL.includes(time)) {
-        return res.status(403).json({
-            ...api_statuses_const_1.statuses["0310"], data: `Time ${validTimeForSTL.join(", ")}`
-        });
+        return res.status(403).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0310"]), { data: `Time ${validTimeForSTL.join(", ")}` }));
     }
     if (type === "3D" && !validTimeFor3D.includes(time)) {
-        return res.status(403).json({
-            ...api_statuses_const_1.statuses["0310"], data: `Time ${validTimeFor3D.join(", ")}`
-        });
+        return res.status(403).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0310"]), { data: `Time ${validTimeFor3D.join(", ")}` }));
     }
     const formattedSchedule = schedule
         ? new Date(schedule).toISOString().substring(0, 10)
@@ -147,7 +148,7 @@ const createBetResult = async (req, res) => {
             },
         },
     ];
-    const result = await bet_result_model_1.BetResult.aggregate(aggregationPipeline);
+    const result = yield bet_result_model_1.BetResult.aggregate(aggregationPipeline);
     if (result.length) {
         return res.status(201).json(api_statuses_const_1.statuses["0314"]);
     }
@@ -157,16 +158,16 @@ const createBetResult = async (req, res) => {
         time,
         type
     });
-    await newBetResult.save();
+    yield newBetResult.save();
     return res.status(201).json(api_statuses_const_1.statuses["0300"]);
-};
+});
 exports.createBetResult = createBetResult;
-const getAllBetResults = async (req, res) => {
-    const result = await bet_result_model_1.BetResult.find({});
+const getAllBetResults = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield bet_result_model_1.BetResult.find({});
     return res.json(result);
-};
+});
 exports.getAllBetResults = getAllBetResults;
-const getBetResult = async (req, res) => {
+const getBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { schedule } = req.query;
     const formattedSchedule = schedule
         ? new Date(schedule).toISOString().substring(0, 10)
@@ -192,11 +193,11 @@ const getBetResult = async (req, res) => {
             },
         },
     ];
-    const result = await bet_result_model_1.BetResult.aggregate(aggregationPipeline);
+    const result = yield bet_result_model_1.BetResult.aggregate(aggregationPipeline);
     return res.json(result);
-};
+});
 exports.getBetResult = getBetResult;
-const numberStats = async (req, res) => {
+const numberStats = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schedule } = req.query;
         const formattedSchedule = schedule
@@ -239,16 +240,16 @@ const numberStats = async (req, res) => {
                 },
             },
         ];
-        const result = await bet_model_1.NumberStats.aggregate(aggregationPipeline);
+        const result = yield bet_model_1.NumberStats.aggregate(aggregationPipeline);
         return res.json(result);
     }
     catch (error) {
         console.error('@numberStats', error);
         res.status(500).json(error);
     }
-};
+});
 exports.numberStats = numberStats;
-const getAll = async (req, res) => {
+const getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Check if there are any validation errors
         const error = new validation_util_1.RequestValidator().getAllBetsAPI(req.query);
@@ -319,7 +320,7 @@ const getAll = async (req, res) => {
                 },
             },
         });
-        const result = await bet_model_1.Bet.aggregate(pipeline);
+        const result = yield bet_model_1.Bet.aggregate(pipeline);
         if (result.length === 0) {
             res.status(200).json([]);
             return;
@@ -330,9 +331,9 @@ const getAll = async (req, res) => {
         console.log('@getAll error', error);
         res.status(500).json(error);
     }
-};
+});
 exports.getAll = getAll;
-const getDailyTotal = async (req, res) => {
+const getDailyTotal = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schedule } = req.query;
         const formattedSchedule = schedule
@@ -369,7 +370,7 @@ const getDailyTotal = async (req, res) => {
                 },
             },
         ];
-        const result = await bet_model_1.NumberStats.aggregate(aggregationPipeline);
+        const result = yield bet_model_1.NumberStats.aggregate(aggregationPipeline);
         return res.json({
             total: (0, exports.getNumbersTotalAmount)(result),
             count: result.length,
@@ -380,9 +381,9 @@ const getDailyTotal = async (req, res) => {
         console.error('@getDailyTotal', error);
         res.status(500).json(error);
     }
-};
+});
 exports.getDailyTotal = getDailyTotal;
-const isSoldOutNumber = async (number, schedule, time, ramble) => {
+const isSoldOutNumber = (number, schedule, time, ramble) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const today = new Date();
         today.setUTCHours(0, 0, 0, 0); // Set the time to 00:00:00.0000 UTC for today
@@ -400,7 +401,7 @@ const isSoldOutNumber = async (number, schedule, time, ramble) => {
                 },
             },
         ];
-        const result = await bet_model_1.NumberStats.aggregate(pipeline);
+        const result = yield bet_model_1.NumberStats.aggregate(pipeline);
         const total = (0, exports.getNumbersTotalAmount)(result);
         const limit = getNumberAndLimitClassification(number, ramble).limit;
         console.log({ full: total >= limit, limit, total });
@@ -409,7 +410,7 @@ const isSoldOutNumber = async (number, schedule, time, ramble) => {
     catch (error) {
         console.log('@isSoldOut error', error);
     }
-};
+});
 const breakRambleNumbers = (input) => {
     const result = [];
     const permute = (str, prefix = '') => {
@@ -466,3 +467,4 @@ const getNumberAndLimitClassification = (number, ramble) => {
         ;
     }
 };
+//# sourceMappingURL=bet.controller.js.map

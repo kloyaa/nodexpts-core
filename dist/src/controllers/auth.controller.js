@@ -24,6 +24,7 @@ const methods_util_1 = require("../../__core/utils/methods.util");
 const user_repositories_1 = require("../../__core/repositories/user.repositories");
 const activity_event_1 = require("../../__core/events/activity.event");
 const activity_enum_1 = require("../../__core/enum/activity.enum");
+const roles_model_1 = require("../../__core/models/roles.model");
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Check if there are any validation errors
@@ -48,17 +49,24 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             res.status(401).json(api_statuses_const_1.statuses["0051"]);
             return;
         }
+        // Find the user's role based on the user ID
+        const userRole = yield roles_model_1.UserRole.findOne({ user: user._id }).exec();
+        // Check if the user has the admin role
+        if ((userRole.name === 'client') && req.from !== "mobile") {
+            return res.status(401).json(api_statuses_const_1.statuses["0057"]);
+        }
+        else if ((userRole.name === 'admin') && req.from !== "web") {
+            return res.status(401).json(api_statuses_const_1.statuses["0057"]);
+        }
         // Compare the provided password with the stored hashed password
         const isPasswordValid = yield bcrypt_1.default.compare(password, user.password);
         if (!isPasswordValid) {
             // Incorrect password
-            res.status(401).json(api_statuses_const_1.statuses["0051"]);
-            return;
+            return res.status(401).json(api_statuses_const_1.statuses["0051"]);
         }
         const isClientProfile = yield (0, user_repositories_1.isClientProfileCreated)(user._id);
         if (!isClientProfile) {
-            res.status(401).json(api_statuses_const_1.statuses["0104"]);
-            return;
+            return res.status(401).json(api_statuses_const_1.statuses["0104"]);
         }
         const isVerified = yield (0, user_repositories_1.isClientVerified)(user._id);
         if (!isVerified) {

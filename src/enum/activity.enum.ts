@@ -3,5 +3,5 @@ export enum BetEventName  {
 }
 
 export enum BetActivityType {
-    PLACE_BET = "BET PLACED"
+    PLACE_BET = "Bet Placed"
 }

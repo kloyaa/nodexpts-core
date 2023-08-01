@@ -1,3 +1,4 @@
+require('dotenv').config();
 import mongoose from 'mongoose'; // Import the mongoose library
 import { Request, Response } from "express";
 import { Bet, NumberStats } from "../models/bet.model";
@@ -483,15 +484,27 @@ const getNumberAndLimitClassification = (number: string, ramble?: boolean): { cl
         },{});
     
     if(ramble) {
-        return { class: "ramble", limit: 900 };;
+        return { 
+            class: "ramble", 
+            limit:  Number(process.env.BET_RAMBLE_NUM_LIMIT) 
+        };
     }
     
     const numDigits: number = digits.length;
     if (Object.values(digitCounts).every((count) => count === 1)) {
-        return { class: "normal", limit: 150 };
+        return { 
+            class: "normal", 
+            limit: Number(process.env.BET_NORMAL_NUM_LIMIT) 
+        };
     } else if (Object.values(digitCounts).some((count) => count === numDigits)) {
-        return { class: "triple", limit: 100 };;
+        return { 
+            class: "triple", 
+            limit: Number(process.env.BET_TRIPLE_NUM_LIMIT) 
+        };;
     } else {
-        return { class: "double", limit: 100 };;
+        return { 
+            class: "double", 
+            limit: Number(process.env.BET_DOUBLE_NUM_LIMIT) 
+        };;
     }
 };

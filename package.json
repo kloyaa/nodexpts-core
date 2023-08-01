@@ -6,7 +6,7 @@
   "author": "Kolya",
   "license": "MIT",
   "scripts": {
-    "start": "node dist/src/index.js",
+    "start": "npm run build && node dist/src/index.js",
     "dev": "nodemon src/index.ts",
     "build": "tsc",
     "lint": "eslint src --ext .ts",

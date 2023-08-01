@@ -4,7 +4,11 @@
       "module": "commonjs",
       "outDir": "dist",
       "strict": true,
-      "esModuleInterop": true
+      "esModuleInterop": true,
+      "baseUrl": ".",
+      "paths": {
+        "*": ["node_modules/*", "src/types/*"]
+      }
     },
     "exclude": [
       "node_modules"

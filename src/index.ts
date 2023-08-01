@@ -32,6 +32,7 @@ app.use('/api', authRoute);
 app.use('/api', profileRoute);
 app.use('/api', betRoute);
 app.use('/api', employeeRoute);
+app.get('/', (_, res) => res.send('Express Typescript on Vercel'));
 
 // Connect to MongoDB
 connectDB();

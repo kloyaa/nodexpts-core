@@ -7,10 +7,12 @@ import authRoute from './routes/auth.route';
 import profileRoute from './routes/profile.route';
 import betRoute from './routes/bet.route';
 import employeeRoute from './routes/employee.route';
+import { maintenanceModeMiddleware } from '../__core/middlewares/is-maintenance-mode.middleware';
 
 const app: Application = express();
 const envVars = {
     ENVIRONMENT: process.env.ENVIRONMENT,
+    ENVIRONMENT_MAINTENANCE: process.env.ENVIRONMENT_MAINTENANCE,
     PORT: process.env.PORT,
     DB_CONNECTION_STRING: process.env.DB_CONNECTION_STRING,
     DB_CONNECTION_STRING_LOCAL: process.env.DB_CONNECTION_STRING_LOCAL,
@@ -23,12 +25,14 @@ const envVars = {
     BET_RAMBLE_NUM_LIMIT: process.env.BET_RAMBLE_NUM_LIMIT,
 };
 
+
 // Middleware
 app.use(helmet()); // Apply standard security headers
 app.use(cors()); // Enable CORS for all routes
 app.use(express.json());
 
 // Routes
+app.use(maintenanceModeMiddleware);
 app.use('/api', authRoute);
 app.use('/api', profileRoute);
 app.use('/api', betRoute);

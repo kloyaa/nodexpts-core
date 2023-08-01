@@ -94,5 +94,9 @@ exports.statuses = {
         message: "Invalid/Incorrect AWS S3 config.",
         code: "0300",
     },
+    "500": {
+        message: "Our server is currently undergoing maintenance to improve your experience. Please try again later.",
+        code: "500",
+    },
 };
 //# sourceMappingURL=api-statuses.const.js.map

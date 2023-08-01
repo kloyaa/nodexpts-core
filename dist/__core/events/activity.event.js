@@ -49,4 +49,19 @@ exports.emitter.on(activity_enum_1.EventName.ACCOUNT_CREATION, (payload) => __aw
         console.error(`@${activity_enum_1.EventName.ACCOUNT_CREATION} error`, error);
     }
 }));
+exports.emitter.on(activity_enum_1.EventName.ROLE_CREATION, (payload) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Create a new Activity document
+        const newActivity = new activity_model_1.Activity({
+            user: payload.user,
+            description: payload.description,
+        });
+        // Save the new activity log to the database
+        yield newActivity.save();
+        console.log({ activity: payload.description });
+    }
+    catch (error) {
+        console.error(`@${activity_enum_1.EventName.ROLE_CREATION} error`, error);
+    }
+}));
 //# sourceMappingURL=activity.event.js.map

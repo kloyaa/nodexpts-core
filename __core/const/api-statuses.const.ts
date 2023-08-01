@@ -47,6 +47,10 @@ export const statuses = {
         message: "User not found.",
         code: "0056",
     },
+    "0057": {
+        message: "User not authorized for this role.",
+        code: "0057",
+    },
     /**
      * @alias Profile
      * @description from 0100 - 0200
@@ -71,9 +75,14 @@ export const statuses = {
         message: "Profile not found. Please create first and try again.",
         code: "0104",
     },
+    
     "0900": {
         message: "Something went wrong. Please try again later.",
         code: "0900",
+    },
+    "0901": {
+        message: "Incorrect format of id.",
+        code: "0901",
     },
     /**
      * @alias Profile

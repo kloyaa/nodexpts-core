@@ -2,13 +2,17 @@ export enum EventName  {
     LOGIN = 'login-activity',
     ACCOUNT_CREATION = 'register-activity',
     LOGOUT = 'logout-activity',
+    ROLE_CREATION = 'role-creation-activity',
+    PROFILE_CREATION = 'profile-creation-activity',
 }
 
 export enum ActivityType {
-    LOGIN = 'LOGIN',
-    LOGIN_FAILURE = 'LOGIN_FAILURE',
-    LOGOUT = 'LOGOUT',
-    ACCOUNT_CREATION = 'ACCOUNT_CREATION',
+    ROLE_CREATION = 'Role created',
+    PROFILE_CREATION = 'Profile created',
+    LOGIN = 'Login',
+    LOGIN_FAILURE = 'Login failed',
+    LOGOUT = 'Logout',
+    ACCOUNT_CREATION = 'Account created',
     WITHDRAWAL_CREATION = 'WITHDRAWAL_CREATION',
     DEPOSIT_CREATION = 'DEPOSIT_CREATION',
     ORDER_PLACEMENT = 'ORDER_PLACEMENT',

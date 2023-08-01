@@ -7,6 +7,6 @@ var BetEventName;
 })(BetEventName || (exports.BetEventName = BetEventName = {}));
 var BetActivityType;
 (function (BetActivityType) {
-    BetActivityType["PLACE_BET"] = "BET PLACED";
+    BetActivityType["PLACE_BET"] = "Bet Placed";
 })(BetActivityType || (exports.BetActivityType = BetActivityType = {}));
 //# sourceMappingURL=activity.enum.js.map

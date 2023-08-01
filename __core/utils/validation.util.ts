@@ -21,6 +21,16 @@ export class RequestValidator {
         return error;
     }
     
+    createRoleForUser(body: any) {
+        const { error } = Joi.object({
+            name: Joi.string().required(),
+            description: Joi.string().required(),
+            user: Joi.string().required(),
+        }).validate(body);
+
+        return error;
+    }
+
     createProfileAPI(body: any) {
         const { error } = Joi.object({
             firstName: Joi.string().required(),

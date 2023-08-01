@@ -9,6 +9,13 @@ export interface IUser extends Document {
     updatedAt: Date;
 }
 
+export interface IUserRole extends Document {
+    user: Types.ObjectId;
+    name: string;
+    description: string;
+  // Add any other properties you want to store in the User Role document
+}
+
 // Define the Profile interface
 export interface IProfile extends Document {
     user: Types.ObjectId;

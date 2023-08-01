@@ -11,8 +11,9 @@ import { isEmpty } from '../../__core/utils/methods.util';
 import { isClientProfileCreated, isClientVerified } from '../../__core/repositories/user.repositories';
 import { emitter } from '../../__core/events/activity.event';
 import { ActivityType, EventName } from '../../__core/enum/activity.enum';
+import { UserRole } from '../../__core/models/roles.model';
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request & { from: string }, res: Response) => {
     try {
         
         // Check if there are any validation errors
@@ -23,9 +24,10 @@ export const login = async (req: Request, res: Response) => {
             });
             return;
         }
-        
-        const { username, password } = req.body;
 
+
+        const { username, password } = req.body;
+                
         // Get secrets
         const secrets = await getAwsSecrets();
         if(isEmpty(secrets)) {
@@ -41,18 +43,27 @@ export const login = async (req: Request, res: Response) => {
             return;
         }
 
+        // Find the user's role based on the user ID
+        const userRole = await UserRole.findOne({ user: user._id }).exec();
+
+        // Check if the user has the admin role
+        if ((userRole.name === 'client') && req.from !== "mobile") {
+            return res.status(401).json(statuses["0057"]);
+        } 
+        else if ((userRole.name === 'admin') && req.from !== "web") {
+            return res.status(401).json(statuses["0057"]);
+        } 
+
         // Compare the provided password with the stored hashed password
         const isPasswordValid: boolean = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             // Incorrect password
-            res.status(401).json(statuses["0051"]);
-            return;
+            return res.status(401).json(statuses["0051"]);
         }
 
         const isClientProfile = await isClientProfileCreated(user._id);
         if(!isClientProfile) {
-            res.status(401).json(statuses["0104"]);
-            return;
+            return res.status(401).json(statuses["0104"]);
         }
 
         const isVerified = await isClientVerified(user._id);

@@ -8,3 +8,4 @@ router.post('/clients/v1/profile', jwt_middleware_1.isAuthenticated, profile_con
 router.get('/clients/v1/profile', jwt_middleware_1.isAuthenticated, profile_controller_1.getProfileByLoginId);
 router.get('/clients/v1/profiles', jwt_middleware_1.isAuthenticated, profile_controller_1.getAllProfiles);
 exports.default = router;
+//# sourceMappingURL=profile.route.js.map

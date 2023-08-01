@@ -13,3 +13,4 @@ router.get('/bet/v1/results', jwt_middleware_1.isAuthenticated, is_user_profile_
 router.get('/bet/v1/numberstats', jwt_middleware_1.isAuthenticated, is_user_profile_created_middleware_1.isUserProfileCreated, bet_controller_1.numberStats);
 router.get('/bet/v1/daily-total', jwt_middleware_1.isAuthenticated, is_user_profile_created_middleware_1.isUserProfileCreated, bet_controller_1.getDailyTotal);
 exports.default = router;
+//# sourceMappingURL=bet.route.js.map

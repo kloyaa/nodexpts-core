@@ -7,3 +7,4 @@ router.post('/auth/v1/login', auth_controller_1.login);
 router.post('/auth/v1/register', auth_controller_1.register);
 router.post('/auth/v1/logout', auth_controller_1.logout);
 exports.default = router;
+//# sourceMappingURL=auth.route.js.map

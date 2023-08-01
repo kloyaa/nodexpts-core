@@ -7,3 +7,4 @@ const router = (0, express_1.Router)();
 router.post('/employee/v1/profile-verification', jwt_middleware_1.isAuthenticated, employee_controller_1.updateProfileVerifiedStatus);
 router.get('/employee/v1/daily-total', jwt_middleware_1.isAuthenticated, employee_controller_1.getDailyTotal);
 exports.default = router;
+//# sourceMappingURL=employee.route.js.map

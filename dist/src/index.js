@@ -42,3 +42,4 @@ app.listen(3000, () => {
     console.log('Environment Variables:', envVars);
 });
 exports.default = app;
+//# sourceMappingURL=index.js.map

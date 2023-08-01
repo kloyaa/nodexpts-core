@@ -10,3 +10,4 @@ const generateJwt = (value, secretKey) => {
     return jsonwebtoken_1.default.sign({ value }, secretKey, { expiresIn: JWT_EXPIRY });
 };
 exports.generateJwt = generateJwt;
+//# sourceMappingURL=jwt.util.js.map

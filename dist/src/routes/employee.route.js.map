@@ -1,0 +1,1 @@
+{"version":3,"file":"employee.route.js","sourceRoot":"","sources":["../../../src/routes/employee.route.ts"],"names":[],"mappings":";;AAAA,qCAAiC;AACjC,4EAAgG;AAChG,4EAA0E;AAC1E,MAAM,MAAM,GAAG,IAAA,gBAAM,GAAE,CAAC;AAExB,MAAM,CAAC,IAAI,CAAC,mCAAmC,EAAE,gCAAe,EAAE,iDAA2B,CAAC,CAAC;AAC/F,MAAM,CAAC,GAAG,CAAC,0BAA0B,EAAE,gCAAe,EAAE,mCAAa,CAAC,CAAC;AAEvE,kBAAe,MAAM,CAAC"}

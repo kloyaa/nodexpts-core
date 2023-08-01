@@ -42,17 +42,17 @@ export const updateProfileVerifiedStatus = async (req: Request, res: Response) =
 
 export const getDailyTotal = async (req: Request, res: Response) => {
     try {
-        const rambled = await Bet.find({ rambled: true}).exec();
-        const target = await Bet.find({ rambled: false}).exec();
+        const [rambled, target] = await Promise.all([
+            Bet.find({ rambled: true }).exec(),
+            Bet.find({ rambled: false }).exec()
+        ])
 
         return res.status(200).json({
             rambled: getNumbersTotalAmount(rambled),
             target: getNumbersTotalAmount(target)
         });
     } catch (error) {
-        console.log('@getAll error', error)
+        console.log('@getDailyTotal error', error)
         res.status(500).json(error);
     }
-
-    return { ramble: 100, target: 100 }
 }

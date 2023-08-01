@@ -27,3 +27,4 @@ var ActivityType;
     ActivityType["EMAIL_NOTIFICATION"] = "EMAIL_NOTIFICATION";
     ActivityType["SMS_NOTIFICATTION"] = "SMS_NOTIFICATTION";
 })(ActivityType || (exports.ActivityType = ActivityType = {}));
+//# sourceMappingURL=activity.enum.js.map

@@ -9,3 +9,4 @@ var BetActivityType;
 (function (BetActivityType) {
     BetActivityType["PLACE_BET"] = "BET PLACED";
 })(BetActivityType || (exports.BetActivityType = BetActivityType = {}));
+//# sourceMappingURL=activity.enum.js.map

@@ -61,3 +61,4 @@ const numberSatsSchema = new mongoose_1.Schema({
 }, { timestamps: true });
 exports.NumberStats = (0, mongoose_1.model)('NumberStats', numberSatsSchema);
 exports.Bet = (0, mongoose_1.model)('Bet', betSchema);
+//# sourceMappingURL=bet.model.js.map

@@ -11,6 +11,7 @@ import employeeRoute from './routes/employee.route';
 const app: Application = express();
 const envVars = {
     ENVIRONMENT: process.env.ENVIRONMENT,
+    PORT: process.env.PORT,
     DB_CONNECTION_STRING: process.env.DB_CONNECTION_STRING,
     DB_CONNECTION_STRING_LOCAL: process.env.DB_CONNECTION_STRING_LOCAL,
     AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
@@ -38,9 +39,11 @@ app.get('/', (_, res) => res.send('Express Typescript on Vercel'));
 connectDB();
 
 // Start the server
-app.listen(3000, () => {
-    console.log('Server listening on port 3000');
-    console.log('Environment Variables:', envVars);
+app.listen(Number(envVars.PORT) || 5000, () => {
+    console.log({
+        'Environment': envVars.ENVIRONMENT,
+        'Port': envVars.PORT
+    });
 });
 
 export default app;

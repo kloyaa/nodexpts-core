@@ -21,3 +21,4 @@ const betSchema = new mongoose_1.Schema({
     },
 }, { timestamps: true });
 exports.Bet = (0, mongoose_1.model)('Bet', betSchema);
+//# sourceMappingURL=bet-config.model.js.map

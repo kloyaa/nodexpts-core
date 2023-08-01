@@ -1,11 +1,20 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAllProfiles = exports.getProfileByLoginId = exports.create = void 0;
 const profile_model_1 = require("../../__core/models/profile.model");
 const user_model_1 = require("../../__core/models/user.model");
 const api_statuses_const_1 = require("../../__core/const/api-statuses.const");
 const validation_util_1 = require("../../__core/utils/validation.util");
-const create = async (req, res) => {
+const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Check if there are any validation errors
         const error = new validation_util_1.RequestValidator().createProfileAPI(req.body);
@@ -17,13 +26,13 @@ const create = async (req, res) => {
         }
         const { firstName, lastName, birthdate, address, contactNumber, gender } = req.body;
         // Check if the user exists
-        const user = await user_model_1.User.findById(req.user.value);
+        const user = yield user_model_1.User.findById(req.user.value);
         if (!user) {
             res.status(404).json(api_statuses_const_1.statuses["0055"]);
             return;
         }
         // Check if profile already exist
-        const profile = await profile_model_1.Profile.findOne({ user }).exec();
+        const profile = yield profile_model_1.Profile.findOne({ user }).exec();
         if (profile) {
             res.status(404).json(api_statuses_const_1.statuses["0103"]);
             return;
@@ -39,15 +48,15 @@ const create = async (req, res) => {
             gender,
         });
         // Save the new Profile document to the database
-        await newProfile.save();
+        yield newProfile.save();
         res.status(201).json(api_statuses_const_1.statuses["0100"]);
     }
     catch (error) {
         res.status(500).json(api_statuses_const_1.statuses["0900"]);
     }
-};
+});
 exports.create = create;
-const getProfileByLoginId = async (req, res) => {
+const getProfileByLoginId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Check if there are any validation errors
         const error = new validation_util_1.RequestValidator().getProfileByLoginIdAPI(req.query);
@@ -96,7 +105,7 @@ const getProfileByLoginId = async (req, res) => {
             }
         ];
         // Execute the aggregation pipeline
-        const result = await user_model_1.User.aggregate(pipeline);
+        const result = yield user_model_1.User.aggregate(pipeline);
         if (result.length === 0) {
             res.status(403).json(api_statuses_const_1.statuses["0104"]);
             return;
@@ -108,9 +117,9 @@ const getProfileByLoginId = async (req, res) => {
         console.log('@getProfileByUsername error', error);
         res.status(500).json(error);
     }
-};
+});
 exports.getProfileByLoginId = getProfileByLoginId;
-const getAllProfiles = async (req, res) => {
+const getAllProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { verified } = req.query;
         const pipeline = [
@@ -147,7 +156,7 @@ const getAllProfiles = async (req, res) => {
             }
         ];
         // Execute the aggregation pipeline
-        const result = await user_model_1.User.aggregate(pipeline);
+        const result = yield user_model_1.User.aggregate(pipeline);
         if (result.length === 0) {
             res.status(200).json([]);
             return;
@@ -158,5 +167,6 @@ const getAllProfiles = async (req, res) => {
         console.log('@getAllActiveProfiles error', error);
         res.status(500).json(error);
     }
-};
+});
 exports.getAllProfiles = getAllProfiles;
+//# sourceMappingURL=profile.controller.js.map

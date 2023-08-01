@@ -41,3 +41,4 @@ const profileSchema = new mongoose_1.Schema({
 }, { timestamps: true });
 // Create and export the Profile model
 exports.Profile = (0, mongoose_1.model)('Profile', profileSchema);
+//# sourceMappingURL=profile.model.js.map

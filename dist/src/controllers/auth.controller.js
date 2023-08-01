@@ -68,10 +68,12 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (!isClientProfile) {
             return res.status(401).json(api_statuses_const_1.statuses["0104"]);
         }
-        const isVerified = yield (0, user_repositories_1.isClientVerified)(user._id);
-        if (!isVerified) {
-            res.status(401).json(api_statuses_const_1.statuses["0055"]);
-            return;
+        if (req.from === "mobile") {
+            const isVerified = yield (0, user_repositories_1.isClientVerified)(user._id);
+            if (!isVerified) {
+                res.status(401).json(api_statuses_const_1.statuses["0055"]);
+                return;
+            }
         }
         activity_event_1.emitter.emit(activity_enum_1.EventName.LOGIN, {
             user: user._id,
@@ -98,6 +100,12 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             });
             return;
         }
+        // Get secrets
+        const secrets = yield (0, aws_service_1.getAwsSecrets)();
+        if ((0, methods_util_1.isEmpty)(secrets)) {
+            res.status(401).json(api_statuses_const_1.statuses["0300"]);
+            return;
+        }
         // Check if the username or email already exists
         const existingUser = yield user_model_1.User.findOne().or([{ username }, { email }]).exec();
         if (existingUser) {
@@ -118,12 +126,22 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         });
         // Save the new User document to the database
         const createdUser = yield newUser.save();
-        // Get secrets
-        const secrets = yield (0, aws_service_1.getAwsSecrets)();
-        if ((0, methods_util_1.isEmpty)(secrets)) {
-            res.status(401).json(api_statuses_const_1.statuses["0300"]);
-            return;
+        let userRole = null;
+        if (req.from === "mobile") {
+            userRole = new roles_model_1.UserRole({
+                user: createdUser._id,
+                name: "client",
+                description: "N/A"
+            });
         }
+        if (req.from === "web") {
+            userRole = new roles_model_1.UserRole({
+                user: createdUser._id,
+                name: "admin",
+                description: "N/A"
+            });
+        }
+        yield userRole.save();
         activity_event_1.emitter.emit(activity_enum_1.EventName.ACCOUNT_CREATION, {
             user: createdUser._id,
             description: activity_enum_1.ActivityType.ACCOUNT_CREATION,

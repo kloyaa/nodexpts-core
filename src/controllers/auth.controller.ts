@@ -45,7 +45,7 @@ export const login = async (req: Request & { from: string }, res: Response) => {
 
         // Find the user's role based on the user ID
         const userRole = await UserRole.findOne({ user: user._id }).exec();
-
+        
         // Check if the user has the admin role
         if ((userRole.name === 'client') && req.from !== "mobile") {
             return res.status(401).json(statuses["0057"]);
@@ -66,11 +66,13 @@ export const login = async (req: Request & { from: string }, res: Response) => {
             return res.status(401).json(statuses["0104"]);
         }
 
-        const isVerified = await isClientVerified(user._id);
-        if(!isVerified) {
-            res.status(401).json(statuses["0055"]);
-            return;
-        }
+        if (req.from === "mobile") {
+            const isVerified = await isClientVerified(user._id);
+            if(!isVerified) {
+                res.status(401).json(statuses["0055"]);
+                return;
+            }
+        } 
 
         emitter.emit(EventName.LOGIN, {
             user: user._id,
@@ -89,7 +91,7 @@ export const login = async (req: Request & { from: string }, res: Response) => {
     }
 };
 
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: Request & { from: string }, res: Response) => {
     try {
         const { username, email, password } = req.body;
     
@@ -102,7 +104,14 @@ export const register = async (req: Request, res: Response) => {
             });
             return;
         }
-    
+
+        // Get secrets
+        const secrets = await getAwsSecrets();
+        if(isEmpty(secrets)) {
+            res.status(401).json(statuses["0300"]);
+            return;
+        }
+
         // Check if the username or email already exists
         const existingUser = await User.findOne().or([{ username }, { email }]).exec();
         if (existingUser) {
@@ -124,17 +133,29 @@ export const register = async (req: Request, res: Response) => {
             password: hashedPassword,
             salt,
         });
-    
+        
         // Save the new User document to the database
         const createdUser = await newUser.save();
-
-        // Get secrets
-        const secrets = await getAwsSecrets();
-        if(isEmpty(secrets)) {
-            res.status(401).json(statuses["0300"]);
-            return;
-        }
-
+        let userRole = null;
+        
+        if (req.from === "mobile") {
+            userRole = new UserRole({ 
+                user: createdUser._id, 
+                name: "client", 
+                description: "N/A" 
+            });
+        } 
+        
+        if (req.from === "web") {
+            userRole = new UserRole({ 
+                user: createdUser._id, 
+                name: "admin", 
+                description: "N/A" 
+            });
+        } 
+        
+        await userRole.save();
+        
         emitter.emit(EventName.ACCOUNT_CREATION, {
             user: createdUser._id,
             description: ActivityType.ACCOUNT_CREATION,

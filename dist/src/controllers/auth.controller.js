@@ -143,6 +143,7 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 description: "N/A"
             });
         }
+        console.log(userRole);
         yield userRole.save();
         activity_event_1.emitter.emit(activity_enum_1.EventName.ACCOUNT_CREATION, {
             user: createdUser._id,

@@ -155,6 +155,7 @@ export const register = async (req: Request & { from: string }, res: Response) =
             });
         } 
         
+        console.log(userRole)
         await userRole.save();
         
         emitter.emit(EventName.ACCOUNT_CREATION, {

@@ -18,7 +18,7 @@ const userRoleSchema = new mongoose_1.Schema({
         required: true
     },
     // Add other schema properties here
-});
+}, { timestamps: true });
 // Create and export the User Role model based on the schema
 exports.UserRole = (0, mongoose_1.model)('Roles', userRoleSchema);
 //# sourceMappingURL=roles.model.js.map

@@ -17,7 +17,7 @@ const userRoleSchema = new Schema<IUserRole>({
         required: true 
     },
   // Add other schema properties here
-});
+}, { timestamps: true });
 
 // Create and export the User Role model based on the schema
 export const UserRole = model<IUserRole>('Roles', userRoleSchema);

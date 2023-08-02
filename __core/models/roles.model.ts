@@ -11,7 +11,6 @@ const userRoleSchema = new Schema<IUserRole>({
     name: { 
         type: String, 
         required: true, 
-        unique: true 
     },
     description: { 
         type: String, 

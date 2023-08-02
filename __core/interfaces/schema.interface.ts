@@ -24,6 +24,7 @@ export interface IProfile extends Document {
     birthdate: Date;
     address: string;
     contactNumber: string;
+    refferedBy: string;
     gender: 'male' | 'female' | 'other';
     verified: boolean;
     // Other profile properties

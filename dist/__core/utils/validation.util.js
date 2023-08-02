@@ -43,6 +43,7 @@ class RequestValidator {
             address: joi_1.default.string().required(),
             contactNumber: joi_1.default.string().required(),
             gender: joi_1.default.string().required(),
+            refferedBy: joi_1.default.string().optional()
         }).validate(body);
         return error;
     }

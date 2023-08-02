@@ -11,7 +11,15 @@ export class RequestValidator {
 
         return error;
     }
+    
+    verifyTokenAPI(body: any) {
+        const { error } = Joi.object({
+            token: Joi.string().required(),
+        }).validate(body);
 
+        return error;
+    }
+    
     loginAPI(body: any) {
         const { error } = Joi.object({
             username: Joi.string().required(),

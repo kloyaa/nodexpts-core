@@ -32,6 +32,10 @@ const profileSchema = new Schema<IProfile>({
         type: String, enum: ['male', 'female', 'other'], 
         required: false 
     },
+    refferedBy: {
+        type: String, 
+        required: false 
+    },
     verified: { 
         type: Boolean, 
         default: false 

@@ -27,7 +27,7 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             });
             return;
         }
-        const { firstName, lastName, birthdate, address, contactNumber, gender } = req.body;
+        const { firstName, lastName, birthdate, address, contactNumber, gender, refferedBy } = req.body;
         // Check if the user exists
         const user = yield user_model_1.User.findById(req.user.value);
         if (!user) {
@@ -49,6 +49,7 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             address,
             contactNumber,
             gender,
+            refferedBy
         });
         // Save the new Profile document to the database
         yield newProfile.save();

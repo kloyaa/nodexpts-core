@@ -47,6 +47,7 @@ export class RequestValidator {
             address: Joi.string().required(),
             contactNumber: Joi.string().required(),
             gender: Joi.string().required(),
+            refferedBy: Joi.string().optional()
         }).validate(body);
 
         return error;

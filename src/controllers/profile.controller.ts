@@ -20,7 +20,7 @@ export const create = async (req: Request & { user?: any }, res: Response): Prom
             return;
         }
         
-        const { firstName, lastName, birthdate, address, contactNumber, gender } = req.body;
+        const { firstName, lastName, birthdate, address, contactNumber, gender, refferedBy } = req.body;
         // Check if the user exists
         const user = await User.findById(req.user.value);
         if (!user) {
@@ -43,6 +43,7 @@ export const create = async (req: Request & { user?: any }, res: Response): Prom
             address,
             contactNumber,
             gender,
+            refferedBy
         });
 
         // Save the new Profile document to the database

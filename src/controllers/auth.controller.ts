@@ -1,11 +1,13 @@
+require('dotenv').config();
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
 import { User } from '../../__core/models/user.model';
 import { IActivity, IUser } from '../../__core/interfaces/schema.interface';
 import { RequestValidator } from '../../__core/utils/validation.util';
 import { statuses } from '../../__core/const/api-statuses.const';
 import { generateJwt } from '../../__core/utils/jwt.util';
-import { encrypt } from '../../__core/utils/crypto.util';
+import { decrypt, encrypt } from '../../__core/utils/crypto.util';
 import { getAwsSecrets } from '../../__core/services/aws.service';
 import { isEmpty } from '../../__core/utils/methods.util';
 import { isClientProfileCreated, isClientVerified } from '../../__core/repositories/user.repositories';
@@ -24,7 +26,6 @@ export const login = async (req: Request & { from: string }, res: Response) => {
             });
             return;
         }
-
 
         const { username, password } = req.body;
                 
@@ -168,6 +169,41 @@ export const register = async (req: Request & { from: string }, res: Response) =
     } catch (error) {
         console.log('@register error', error)
         res.status(500).json(error);
+    }
+}
+
+export const verifyToken = async (req: Request & { from: string }, res: Response) => {
+    try {
+        // Check if there are any validation errors
+        const error = new RequestValidator().verifyTokenAPI(req.body)
+        if (error) {
+            res.status(400).json({ 
+                error: error.details[0].message.replace(/['"]/g, '') 
+            });
+            return;
+        }
+
+        const { token } = req.body;
+        const secrets = await getAwsSecrets();
+
+        const decryptedToken = decrypt(token, secrets?.CRYPTO_SECRET as string)
+        if(!decryptedToken) {
+            return res.status(403).json({ error: 'Failed to authenticate token.' });
+        }
+
+        if(isEmpty(secrets?.JWT_SECRET_KEY)) {
+            return res.status(401).json({ error: "Aws S3 JWT_SECRET is incorrect/invalid"});
+        }
+
+        jwt.verify(decryptedToken, secrets?.JWT_SECRET_KEY as string, (err: any, decoded: any) => {
+            if (err) {
+                return res.status(403).json({ error: 'Failed to authenticate token.' });
+            }
+            return res.status(200).json(statuses["00"]);
+        });
+    } catch (error) {
+        console.log(error)
+        return res.status(403).json({ error: 'Failed to authenticate token.' });
     }
 }
 

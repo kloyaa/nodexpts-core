@@ -1,4 +1,3 @@
-import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { getAwsSecrets } from '../services/aws.service';
 import { isEmpty } from '../utils/methods.util';

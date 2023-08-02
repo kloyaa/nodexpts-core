@@ -14,6 +14,12 @@ class RequestValidator {
         }).validate(body);
         return error;
     }
+    verifyTokenAPI(body) {
+        const { error } = joi_1.default.object({
+            token: joi_1.default.string().required(),
+        }).validate(body);
+        return error;
+    }
     loginAPI(body) {
         const { error } = joi_1.default.object({
             username: joi_1.default.string().required(),

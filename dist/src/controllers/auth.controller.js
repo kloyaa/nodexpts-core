@@ -12,8 +12,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logout = exports.register = exports.login = void 0;
+exports.logout = exports.verifyToken = exports.register = exports.login = void 0;
+require('dotenv').config();
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const user_model_1 = require("../../__core/models/user.model");
 const validation_util_1 = require("../../__core/utils/validation.util");
 const api_statuses_const_1 = require("../../__core/const/api-statuses.const");
@@ -154,6 +156,38 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.register = register;
+const verifyToken = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Check if there are any validation errors
+        const error = new validation_util_1.RequestValidator().verifyTokenAPI(req.body);
+        if (error) {
+            res.status(400).json({
+                error: error.details[0].message.replace(/['"]/g, '')
+            });
+            return;
+        }
+        const { token } = req.body;
+        const secrets = yield (0, aws_service_1.getAwsSecrets)();
+        const decryptedToken = (0, crypto_util_1.decrypt)(token, secrets === null || secrets === void 0 ? void 0 : secrets.CRYPTO_SECRET);
+        if (!decryptedToken) {
+            return res.status(403).json({ error: 'Failed to authenticate token.' });
+        }
+        if ((0, methods_util_1.isEmpty)(secrets === null || secrets === void 0 ? void 0 : secrets.JWT_SECRET_KEY)) {
+            return res.status(401).json({ error: "Aws S3 JWT_SECRET is incorrect/invalid" });
+        }
+        jsonwebtoken_1.default.verify(decryptedToken, secrets === null || secrets === void 0 ? void 0 : secrets.JWT_SECRET_KEY, (err, decoded) => {
+            if (err) {
+                return res.status(403).json({ error: 'Failed to authenticate token.' });
+            }
+            return res.status(200).json(api_statuses_const_1.statuses["00"]);
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(403).json({ error: 'Failed to authenticate token.' });
+    }
+});
+exports.verifyToken = verifyToken;
 const logout = (req, res) => {
     return res.status(200).json({
         message: "Logout success"

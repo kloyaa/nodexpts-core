@@ -171,8 +171,12 @@ export const getAllProfiles = async (req: Request, res: Response): Promise<any> 
                         address: 1,
                         contactNumber: 1,
                         gender: 1,
-                        verified: 1
-                    }
+                        verified: 1,
+                        createdAt: 1, 
+                        updatedAt: 1, 
+                    },
+                    createdAt: 1,
+                    updatedAt: 1, 
                 }
             }
         ];

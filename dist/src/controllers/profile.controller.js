@@ -173,8 +173,12 @@ const getAllProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function*
                         address: 1,
                         contactNumber: 1,
                         gender: 1,
-                        verified: 1
-                    }
+                        verified: 1,
+                        createdAt: 1,
+                        updatedAt: 1,
+                    },
+                    createdAt: 1,
+                    updatedAt: 1,
                 }
             }
         ];

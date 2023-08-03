@@ -34,4 +34,20 @@ exports.emitter.on(activity_enum_1.BetEventName.PLACE_BET, (payload) => __awaite
         console.error(`@${activity_enum_1.BetEventName.PLACE_BET} error`, error);
     }
 }));
+// Event listener for 'login-activity' event
+exports.emitter.on(activity_enum_1.BetEventName.BET_ACTIVITY, (payload) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Create a new Activity document
+        const newActivity = new activity_model_1.Activity({
+            user: payload.user,
+            description: payload.description,
+        });
+        // Save the new activity log to the database
+        yield newActivity.save();
+        console.log({ activity: payload.description });
+    }
+    catch (error) {
+        console.error(`@${payload.description} error`, error);
+    }
+}));
 //# sourceMappingURL=activity.event.js.map

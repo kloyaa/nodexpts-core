@@ -166,6 +166,10 @@ const createBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function
         type
     });
     yield newBetResult.save();
+    activity_event_1.emitter.emit(activity_enum_1.BetEventName.BET_ACTIVITY, {
+        user: req.user.value,
+        description: activity_enum_1.BetActivityType.CREATE_BET_RESULT,
+    });
     return res.status(201).json(api_statuses_const_1.statuses["0300"]);
 });
 exports.createBetResult = createBetResult;
@@ -211,6 +215,10 @@ const deleteBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function
         if (!betResult) {
             return res.status(404).json({ error: "Bet result not found" });
         }
+        activity_event_1.emitter.emit(activity_enum_1.BetEventName.BET_ACTIVITY, {
+            user: req.user.value,
+            description: activity_enum_1.BetActivityType.DELETED_BET_RESULT,
+        });
         return res.json(api_statuses_const_1.statuses["0300"]);
     }
     catch (error) {

@@ -182,6 +182,11 @@ export const createBetResult = async (req: Request & { user?: any }, res: Respon
 
     await newBetResult.save();
 
+    emitter.emit(BetEventName.BET_ACTIVITY, {
+        user: req.user.value,
+        description: BetActivityType.CREATE_BET_RESULT,
+    } as IActivity);
+
     return res.status(201).json(statuses["0300"]);
 }
 
@@ -223,7 +228,7 @@ export const getBetResult = async (req: Request & { user?: any }, res: Response)
     return res.json(result);
 }
 
-export const deleteBetResult = async (req: Request, res: Response) => {
+export const deleteBetResult = async (req: Request & { user?: any }, res: Response) => {
     const { _id } = req.params;
 
     try {
@@ -232,6 +237,11 @@ export const deleteBetResult = async (req: Request, res: Response) => {
         if (!betResult) {
             return res.status(404).json({ error: "Bet result not found" });
         }
+
+        emitter.emit(BetEventName.BET_ACTIVITY, {
+            user: req.user.value,
+            description: BetActivityType.DELETED_BET_RESULT,
+        } as IActivity);
 
         return res.json(statuses["0300"]);
     } catch (error) {

@@ -4,11 +4,13 @@ export enum EventName  {
     LOGOUT = 'logout-activity',
     ROLE_CREATION = 'role-creation-activity',
     PROFILE_CREATION = 'profile-creation-activity',
+    PROFILE_VERIFICATION = 'profile-verification-activity',
 }
 
 export enum ActivityType {
     ROLE_CREATION = 'Role created',
     PROFILE_CREATION = 'Profile created',
+    PROFILE_VERIFICATION = 'Account approved',
     LOGIN = 'Login',
     LOGIN_FAILURE = 'Login failed',
     LOGOUT = 'Logout',

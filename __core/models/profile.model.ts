@@ -29,7 +29,8 @@ const profileSchema = new Schema<IProfile>({
         required: false 
     },
     gender: { 
-        type: String, enum: ['male', 'female', 'other'], 
+        type: String, 
+        enum: ['male', 'female', 'other'], 
         required: false 
     },
     refferedBy: {

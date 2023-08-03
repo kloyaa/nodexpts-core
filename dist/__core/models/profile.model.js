@@ -30,7 +30,8 @@ const profileSchema = new mongoose_1.Schema({
         required: false
     },
     gender: {
-        type: String, enum: ['male', 'female', 'other'],
+        type: String,
+        enum: ['male', 'female', 'other'],
         required: false
     },
     refferedBy: {

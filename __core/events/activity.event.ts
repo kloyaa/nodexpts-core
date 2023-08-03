@@ -54,3 +54,19 @@ emitter.on(EventName.ROLE_CREATION, async (payload: IActivity) => {
         console.error(`@${EventName.ROLE_CREATION} error`, error);
     }
 });
+
+emitter.on(EventName.PROFILE_VERIFICATION, async (payload: IActivity) => {
+    try {
+        // Create a new Activity document
+        const newActivity: IActivity = new Activity({
+            user: payload.user,
+            description: payload.description,
+        });
+
+        // Save the new activity log to the database
+        await newActivity.save();
+        console.log({ activity: payload.description })
+    } catch (error) {
+        console.error(`@${EventName.PROFILE_VERIFICATION} error`, error);
+    }
+});

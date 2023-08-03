@@ -12,12 +12,8 @@ const activitySchema = new Schema<IActivity>({
         type: String,
         required: true,
     },
-    timestamp: {
-        type: Date,
-        required: true,
-        default: Date.now,
-    },
-});
+
+}, { timestamps: true });
 
 // Create the Activity model
 export const Activity = model<IActivity>('Activity', activitySchema);

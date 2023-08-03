@@ -27,4 +27,8 @@ export const statuses = {
         message: "The result for the specific time and schedule has already been set. If you want to add a new one, please remove the existing entry.",
         code: "0314",
     },
+    "0315": {
+        message: "Ramble numbers should contains 3 unique numbers.",
+        code: "0315",
+    },
 }

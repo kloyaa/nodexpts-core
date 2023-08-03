@@ -16,6 +16,10 @@ const betSchema = new Schema<IBet>({
         type: String, 
         required: true 
     },
+    code: {
+        type: String, 
+        required: true 
+    },
     schedule: {
         type: Date, 
         required: true 
@@ -31,6 +35,10 @@ const betSchema = new Schema<IBet>({
     },
     rambled: {
         type: Boolean,
+        required: true
+    },
+    reference: {
+        type: String,
         required: true
     }
 }, { timestamps: true });

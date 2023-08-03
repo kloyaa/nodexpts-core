@@ -10,6 +10,7 @@ import { IActivity } from '../../__core/interfaces/schema.interface';
 import { BetActivityType, BetEventName } from '../enum/activity.enum';
 import { ObjectId } from 'mongodb';
 import { BetResult } from '../models/bet-result.model';
+import { generateReference } from '../../__core/utils/generator.util';
 
 const validTimeForSTL = ["10:30 AM", "3:00 PM", "8:00 PM"];
 const validTimeFor3D = ["2:00 PM", "5:00 PM", "9:00 PM"];
@@ -35,10 +36,6 @@ export const placeBet = async (req: Request & { user?: any }, res: Response) => 
             return res.status(403).json(BetStatuses["0313"]);
         }
 
-        if(rambled && (Number(amount) % 6) !== 0) {
-            return res.status(403).json(BetStatuses["0311"]);
-        }
-
         if(type === "STL" && !validTimeForSTL.includes(time)){
             return res.status(403).json({
                 ...BetStatuses["0310"], data: `Time ${validTimeForSTL.join(", ")}`
@@ -51,7 +48,12 @@ export const placeBet = async (req: Request & { user?: any }, res: Response) => 
             });
         }
 
+        // Generate Reference
+        const reference = `SWSYA-${generateReference().toUpperCase().slice(0, 4)}-${generateReference().toUpperCase().slice(4)}`;
         if(rambled) {
+            if(!allowedInRamble(number)) {
+                return res.status(201).json(statuses["0315"]);
+            }
             const numbers = breakRambleNumbers(number);
             const splittedValues = numbers.map((num) => ({
                 amount: amount / 6,
@@ -61,6 +63,8 @@ export const placeBet = async (req: Request & { user?: any }, res: Response) => 
                 schedule,
                 time,
                 rambled,
+                reference,
+                code: number
             }));
         
             const [savedBet, _] = await Promise.all([
@@ -82,7 +86,9 @@ export const placeBet = async (req: Request & { user?: any }, res: Response) => 
                 time,
                 amount,
                 rambled,
-                number
+                number,
+                reference,
+                code: number
             });
             const newNumberStat = new NumberStats({
                 schedule,
@@ -340,6 +346,8 @@ export const getAll = async (req: Request & { user?: any }, res: Response) => {
                     time: 1,
                     amount: 1,
                     rambled: 1,
+                    number: 1,
+                    reference: 1,
                     profile: {
                         firstName: 1,
                         lastName: 1,
@@ -358,7 +366,18 @@ export const getAll = async (req: Request & { user?: any }, res: Response) => {
                 res.status(200).json([]);
                 return;
             }
-            return res.status(200).json(result);
+
+            const mergedData = result.reduce((result, current) => {
+                const existingItem = result.find((item: IBet) => item.reference === current.reference);
+                if (existingItem) {
+                    existingItem.amount += current.amount;
+                } else {
+                    result.push({ ...current });
+                }
+                return result;
+            }, []);
+            
+            return res.status(200).json(mergedData);
         } catch (error) {
             console.log('@getAll error', error)
             res.status(500).json(error);
@@ -448,24 +467,32 @@ const isSoldOutNumber = async (number: string, schedule: Date, time: string, ram
     }
 };
 
+const allowedInRamble = (input: string) => {
+    const numStr = input.toString();
+    const digitSet = new Set(numStr);
+  
+    return digitSet.size === numStr.length;
+};
+
 const breakRambleNumbers = (input: string): string[] => {
-    const result: string[] = [];
+    const result: Set<string> = new Set();
 
     const permute = (str: string, prefix: string = '') => {
-    if (str.length === 0) {
-        result.push(prefix);
-        return;
-    }
+        if (str.length === 0) {
+            result.add(prefix);
+            return;
+        }
 
-    for (let i = 0; i < str.length; i++) {
-        permute(str.slice(0, i) + str.slice(i + 1), prefix + str[i]);
-    }
+        for (let i = 0; i < str.length; i++) {
+            permute(str.slice(0, i) + str.slice(i + 1), prefix + str[i]);
+        }
     };
 
     permute(input);
 
-    return result;
+    return Array.from(result);
 };
+
 
 export const getNumbersTotalAmount = (arr: IBet[]): number => {
     let totalAmount = 0;

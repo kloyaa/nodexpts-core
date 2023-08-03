@@ -190,6 +190,7 @@ export const getAllProfiles = async (req: Request, res: Response): Promise<any> 
             res.status(200).json([]);
             return;
         }
+        
         return res.status(200).json(result);
     } catch (error) {
         console.log('@getAllActiveProfiles error', error)

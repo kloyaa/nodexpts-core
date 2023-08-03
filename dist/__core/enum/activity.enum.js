@@ -8,11 +8,13 @@ var EventName;
     EventName["LOGOUT"] = "logout-activity";
     EventName["ROLE_CREATION"] = "role-creation-activity";
     EventName["PROFILE_CREATION"] = "profile-creation-activity";
+    EventName["PROFILE_VERIFICATION"] = "profile-verification-activity";
 })(EventName || (exports.EventName = EventName = {}));
 var ActivityType;
 (function (ActivityType) {
     ActivityType["ROLE_CREATION"] = "Role created";
     ActivityType["PROFILE_CREATION"] = "Profile created";
+    ActivityType["PROFILE_VERIFICATION"] = "Account approved";
     ActivityType["LOGIN"] = "Login";
     ActivityType["LOGIN_FAILURE"] = "Login failed";
     ActivityType["LOGOUT"] = "Logout";

@@ -56,6 +56,7 @@ export const create = async (req: Request & { user?: any }, res: Response): Prom
 
         res.status(201).json(statuses["0100"]);
     } catch (error) {
+        console.log("@create error", error)
         res.status(500).json(statuses["0900"]);
     }
 }
@@ -175,6 +176,7 @@ export const getAllProfiles = async (req: Request, res: Response): Promise<any> 
                         verified: 1,
                         createdAt: 1, 
                         updatedAt: 1, 
+                        refferedBy: 1,
                     },
                     createdAt: 1,
                     updatedAt: 1, 

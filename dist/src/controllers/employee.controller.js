@@ -44,6 +44,10 @@ const updateProfileVerifiedStatus = (req, res) => __awaiter(void 0, void 0, void
         }
         profile.verified = verified;
         yield profile.save();
+        activity_event_1.emitter.emit(activity_enum_1.EventName.PROFILE_VERIFICATION, {
+            user: req.user.value,
+            description: activity_enum_1.ActivityType.PROFILE_VERIFICATION,
+        });
         res.status(200).json(profile);
     }
     catch (error) {

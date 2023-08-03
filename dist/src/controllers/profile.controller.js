@@ -60,6 +60,7 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(201).json(api_statuses_const_1.statuses["0100"]);
     }
     catch (error) {
+        console.log("@create error", error);
         res.status(500).json(api_statuses_const_1.statuses["0900"]);
     }
 });
@@ -177,6 +178,7 @@ const getAllProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function*
                         verified: 1,
                         createdAt: 1,
                         updatedAt: 1,
+                        refferedBy: 1,
                     },
                     createdAt: 1,
                     updatedAt: 1,

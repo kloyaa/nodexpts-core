@@ -12,7 +12,7 @@ import { emitter } from '../../__core/events/activity.event';
 import { ActivityType, EventName } from '../../__core/enum/activity.enum';
 
 // Patch request to update the 'verified' field of a profile
-export const updateProfileVerifiedStatus = async (req: Request, res: Response) => {
+export const updateProfileVerifiedStatus = async (req: Request & { user?: any }, res: Response) => {
     try {
         // // Check if there are any validation errors
         const error = new RequestValidator().updateProfileVerifiedStatusAPI(req.body)
@@ -40,6 +40,11 @@ export const updateProfileVerifiedStatus = async (req: Request, res: Response) =
 
         profile.verified = verified;
         await profile.save();
+
+        emitter.emit(EventName.PROFILE_VERIFICATION, {
+            user: req.user.value,
+            description: ActivityType.PROFILE_VERIFICATION,
+        } as IActivity);
 
         res.status(200).json(profile);
     } catch (error) {

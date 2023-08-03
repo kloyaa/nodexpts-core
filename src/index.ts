@@ -7,6 +7,8 @@ import authRoute from './routes/auth.route';
 import profileRoute from './routes/profile.route';
 import betRoute from './routes/bet.route';
 import employeeRoute from './routes/employee.route';
+import acitvityRoute from './routes/activity.route';
+
 import { maintenanceModeMiddleware } from '../__core/middlewares/is-maintenance-mode.middleware';
 
 const app: Application = express();
@@ -37,6 +39,7 @@ app.use('/api', authRoute);
 app.use('/api', profileRoute);
 app.use('/api', betRoute);
 app.use('/api', employeeRoute);
+app.use('/api', acitvityRoute);
 app.get('/', (_, res) => res.send('Express Typescript on Vercel'));
 
 // Connect to MongoDB

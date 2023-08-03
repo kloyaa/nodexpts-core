@@ -13,12 +13,7 @@ const activitySchema = new mongoose_1.Schema({
         type: String,
         required: true,
     },
-    timestamp: {
-        type: Date,
-        required: true,
-        default: Date.now,
-    },
-});
+}, { timestamps: true });
 // Create the Activity model
 exports.Activity = (0, mongoose_1.model)('Activity', activitySchema);
 //# sourceMappingURL=activity.model.js.map

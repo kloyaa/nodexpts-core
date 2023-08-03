@@ -11,6 +11,7 @@ const auth_route_1 = __importDefault(require("./routes/auth.route"));
 const profile_route_1 = __importDefault(require("./routes/profile.route"));
 const bet_route_1 = __importDefault(require("./routes/bet.route"));
 const employee_route_1 = __importDefault(require("./routes/employee.route"));
+const activity_route_1 = __importDefault(require("./routes/activity.route"));
 const is_maintenance_mode_middleware_1 = require("../__core/middlewares/is-maintenance-mode.middleware");
 const app = (0, express_1.default)();
 const envVars = {
@@ -37,6 +38,7 @@ app.use('/api', auth_route_1.default);
 app.use('/api', profile_route_1.default);
 app.use('/api', bet_route_1.default);
 app.use('/api', employee_route_1.default);
+app.use('/api', activity_route_1.default);
 app.get('/', (_, res) => res.send('Express Typescript on Vercel'));
 // Connect to MongoDB
 (0, db_util_1.default)();

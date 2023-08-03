@@ -17,6 +17,10 @@ const betSchema = new mongoose_1.Schema({
         type: String,
         required: true
     },
+    code: {
+        type: String,
+        required: true
+    },
     schedule: {
         type: Date,
         required: true
@@ -32,6 +36,10 @@ const betSchema = new mongoose_1.Schema({
     },
     rambled: {
         type: Boolean,
+        required: true
+    },
+    reference: {
+        type: String,
         required: true
     }
 }, { timestamps: true });

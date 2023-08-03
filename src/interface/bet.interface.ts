@@ -2,7 +2,7 @@ import { Types, Document } from "mongoose";
 
 export interface IBet extends Document {
     user: Types.ObjectId;
-    type: "S3" | "STL";
+    type: "3D" | "STL";
     schedule: Date;
     amount: number;
     number: String;

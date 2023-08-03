@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getNumbersTotalAmount = exports.getDailyTotal = exports.getAll = exports.numberStats = exports.getBetResult = exports.getAllBetResults = exports.createBetResult = exports.placeBet = void 0;
+exports.getNumbersTotalAmount = exports.getDailyTotal = exports.getDailyBetResults = exports.getMyBets = exports.getAll = exports.numberStats = exports.deleteBetResult = exports.getBetResult = exports.getAllBetResults = exports.createBetResult = exports.placeBet = void 0;
 require('dotenv').config();
 const mongoose_1 = __importDefault(require("mongoose")); // Import the mongoose library
 const bet_model_1 = require("../models/bet.model");
@@ -22,6 +22,8 @@ const activity_event_1 = require("../events/activity.event");
 const activity_enum_1 = require("../enum/activity.enum");
 const mongodb_1 = require("mongodb");
 const bet_result_model_1 = require("../models/bet-result.model");
+const generator_util_1 = require("../../__core/utils/generator.util");
+const bet_repository_1 = require("../repositories/bet.repository");
 const validTimeForSTL = ["10:30 AM", "3:00 PM", "8:00 PM"];
 const validTimeFor3D = ["2:00 PM", "5:00 PM", "9:00 PM"];
 const placeBet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -42,16 +44,18 @@ const placeBet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (((isSoldOut === null || isSoldOut === void 0 ? void 0 : isSoldOut.total) + amount) > (isSoldOut === null || isSoldOut === void 0 ? void 0 : isSoldOut.limit)) {
             return res.status(403).json(api_statuses_const_1.statuses["0313"]);
         }
-        if (rambled && (Number(amount) % 6) !== 0) {
-            return res.status(403).json(api_statuses_const_1.statuses["0311"]);
-        }
         if (type === "STL" && !validTimeForSTL.includes(time)) {
             return res.status(403).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0310"]), { data: `Time ${validTimeForSTL.join(", ")}` }));
         }
         if (type === "3D" && !validTimeFor3D.includes(time)) {
             return res.status(403).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0310"]), { data: `Time ${validTimeFor3D.join(", ")}` }));
         }
+        // Generate Reference
+        const reference = `SWSYA-${(0, generator_util_1.generateReference)().toUpperCase().slice(0, 4)}-${(0, generator_util_1.generateReference)().toUpperCase().slice(4)}`;
         if (rambled) {
+            if (!allowedInRamble(number)) {
+                return res.status(201).json(api_statuses_const_1.statuses["0315"]);
+            }
             const numbers = breakRambleNumbers(number);
             const splittedValues = numbers.map((num) => ({
                 amount: amount / 6,
@@ -61,6 +65,8 @@ const placeBet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 schedule,
                 time,
                 rambled,
+                reference,
+                code: number
             }));
             const [savedBet, _] = yield Promise.all([
                 bet_model_1.Bet.insertMany(splittedValues),
@@ -80,7 +86,9 @@ const placeBet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 time,
                 amount,
                 rambled,
-                number
+                number,
+                reference,
+                code: number
             });
             const newNumberStat = new bet_model_1.NumberStats({
                 schedule,
@@ -150,7 +158,7 @@ const createBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function
     ];
     const result = yield bet_result_model_1.BetResult.aggregate(aggregationPipeline);
     if (result.length) {
-        return res.status(201).json(api_statuses_const_1.statuses["0314"]);
+        return res.status(403).json(api_statuses_const_1.statuses["0314"]);
     }
     const newBetResult = new bet_result_model_1.BetResult({
         number,
@@ -185,7 +193,7 @@ const getBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         },
         {
             $project: {
-                _id: 0,
+                _id: 1,
                 schedule: 1,
                 number: 1,
                 time: 1,
@@ -197,6 +205,21 @@ const getBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     return res.json(result);
 });
 exports.getBetResult = getBetResult;
+const deleteBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { _id } = req.params;
+    try {
+        const betResult = yield bet_result_model_1.BetResult.findByIdAndDelete(_id);
+        if (!betResult) {
+            return res.status(404).json({ error: "Bet result not found" });
+        }
+        return res.json(api_statuses_const_1.statuses["0300"]);
+    }
+    catch (error) {
+        console.log("@deleteBetResult error", error);
+        return res.status(500).json(api_statuses_const_1.statuses["0900"]);
+    }
+});
+exports.deleteBetResult = deleteBetResult;
 const numberStats = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schedule } = req.query;
@@ -259,7 +282,10 @@ const getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             });
             return;
         }
-        const { time, type, schedule, user } = req.query;
+        const { time, type, schedule, user, page: currentPage, limit: currentLimit } = req.query;
+        const page = parseInt(currentPage) || 1;
+        const limit = parseInt(currentLimit) || 10;
+        const skip = (page - 1) * limit;
         const pipeline = [];
         if (time || type || schedule || user) {
             // Convert schedule to "YYYY-MM-DD" format for matching
@@ -299,6 +325,8 @@ const getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }, {
             $project: {
                 type: 1,
+                number: 1,
+                reference: 1,
                 schedule: {
                     $dateToString: {
                         date: '$schedule',
@@ -325,7 +353,20 @@ const getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             res.status(200).json([]);
             return;
         }
-        return res.status(200).json(result);
+        const mergedData = result.reduce((result, current) => {
+            const existingItem = result.find((item) => item.reference === current.reference);
+            if (existingItem) {
+                existingItem.amount += current.amount;
+            }
+            else {
+                result.push(Object.assign({}, current));
+            }
+            return result;
+        }, []);
+        return res
+            .header({ "x-bets-count": result.length })
+            .status(200)
+            .json(mergedData);
     }
     catch (error) {
         console.log('@getAll error', error);
@@ -333,6 +374,107 @@ const getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.getAll = getAll;
+const getMyBets = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Check if there are any validation errors
+        const error = new validation_util_1.RequestValidator().getAllBetsAPI(req.query);
+        if (error) {
+            res.status(400).json({
+                error: error.details[0].message.replace(/['"]/g, '')
+            });
+            return;
+        }
+        const { time, type, schedule } = req.query;
+        const pipeline = [];
+        if (time || type || schedule) {
+            // Convert schedule to "YYYY-MM-DD" format for matching
+            const formattedSchedule = schedule
+                ? new Date(schedule).toISOString().substring(0, 10)
+                : new Date().toISOString().substring(0, 10);
+            // If any of the query parameters is present, add the $match stage
+            const matchStage = {};
+            if (formattedSchedule) {
+                matchStage.$expr = {
+                    $eq: [
+                        { $dateToString: { format: '%Y-%m-%d', date: '$schedule', timezone: 'UTC' } },
+                        formattedSchedule,
+                    ],
+                };
+            }
+            if (type) {
+                matchStage.type = type;
+            }
+            if (time) {
+                matchStage.time = time;
+            }
+            pipeline.push({
+                $match: Object.assign(Object.assign({}, matchStage), { user: new mongoose_1.default.Types.ObjectId(req.user.value) })
+            });
+        }
+        pipeline.push({
+            $lookup: {
+                from: 'profiles',
+                localField: 'user',
+                foreignField: 'user',
+                as: 'profile',
+            },
+        }, {
+            $unwind: '$profile',
+        }, {
+            $project: {
+                type: 1,
+                number: 1,
+                schedule: {
+                    $dateToString: {
+                        date: '$schedule',
+                        format: '%Y-%m-%d',
+                        timezone: 'UTC',
+                    },
+                },
+                time: 1,
+                amount: 1,
+                rambled: 1,
+                reference: 1,
+                profile: {
+                    firstName: 1,
+                    lastName: 1,
+                    birthdate: 1,
+                    address: 1,
+                    contactNumber: 1,
+                    gender: 1,
+                    verified: 1,
+                },
+            },
+        });
+        const result = yield bet_model_1.Bet.aggregate(pipeline);
+        if (result.length === 0) {
+            res.status(200).json([]);
+            return;
+        }
+        const mergedData = result.reduce((result, current) => {
+            const existingItem = result.find((item) => item.reference === current.reference);
+            if (existingItem) {
+                existingItem.amount += current.amount;
+            }
+            else {
+                result.push(Object.assign({}, current));
+            }
+            return result;
+        }, []);
+        return res.status(200).json(mergedData);
+    }
+    catch (error) {
+        console.log('@getAll error', error);
+        res.status(500).json(error);
+    }
+});
+exports.getMyBets = getMyBets;
+const getDailyBetResults = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const myBets = yield (0, bet_repository_1.getMyBetsRepository)({ user: req.user.value });
+    const todaysResult = yield (0, bet_repository_1.getBetResultRepository)();
+    return res.status(200).json(winCount(todaysResult, myBets));
+});
+exports.getDailyBetResults = getDailyBetResults;
 const getDailyTotal = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schedule } = req.query;
@@ -383,6 +525,29 @@ const getDailyTotal = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.getDailyTotal = getDailyTotal;
+const winCount = (dailyResults, bets) => {
+    const winCounts = [];
+    dailyResults.forEach((dailyResult) => {
+        const { number, type, time, schedule } = dailyResult;
+        const matchedItems = bets.filter((bet) => {
+            return bet.type === type &&
+                bet.time === time &&
+                bet.schedule === schedule.toISOString().substring(0, 10) &&
+                (bet.rambled ? areEquivalentNumbers(bet.number, number) : bet.number === number);
+        });
+        const wins = matchedItems.length;
+        winCounts.push({ number, wins, time, type, schedule });
+    });
+    return winCounts;
+};
+const areEquivalentNumbers = (num1, num2) => {
+    if (num1.length !== num2.length) {
+        return false;
+    }
+    const sortedNum1 = num1.split('').sort().join('');
+    const sortedNum2 = num2.split('').sort().join('');
+    return sortedNum1 === sortedNum2;
+};
 const isSoldOutNumber = (number, schedule, time, ramble) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const today = new Date();
@@ -411,11 +576,16 @@ const isSoldOutNumber = (number, schedule, time, ramble) => __awaiter(void 0, vo
         console.log('@isSoldOut error', error);
     }
 });
+const allowedInRamble = (input) => {
+    const numStr = input.toString();
+    const digitSet = new Set(numStr);
+    return digitSet.size === numStr.length;
+};
 const breakRambleNumbers = (input) => {
-    const result = [];
+    const result = new Set();
     const permute = (str, prefix = '') => {
         if (str.length === 0) {
-            result.push(prefix);
+            result.add(prefix);
             return;
         }
         for (let i = 0; i < str.length; i++) {
@@ -423,7 +593,7 @@ const breakRambleNumbers = (input) => {
         }
     };
     permute(input);
-    return result;
+    return Array.from(result);
 };
 const getNumbersTotalAmount = (arr) => {
     let totalAmount = 0;

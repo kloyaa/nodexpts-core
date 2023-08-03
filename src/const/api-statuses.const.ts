@@ -31,4 +31,8 @@ export const statuses = {
         message: "Ramble numbers should contains 3 unique numbers.",
         code: "0315",
     },
+    "0900": {
+        message: "Something went wrong. Please try again later.",
+        code: "0900",
+    },
 }

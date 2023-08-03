@@ -11,6 +11,7 @@ import { BetActivityType, BetEventName } from '../enum/activity.enum';
 import { ObjectId } from 'mongodb';
 import { BetResult } from '../models/bet-result.model';
 import { generateReference } from '../../__core/utils/generator.util';
+import { getBetResultRepository, getMyBetsRepository } from '../repositories/bet.repository';
 
 const validTimeForSTL = ["10:30 AM", "3:00 PM", "8:00 PM"];
 const validTimeFor3D = ["2:00 PM", "5:00 PM", "9:00 PM"];
@@ -170,7 +171,7 @@ export const createBetResult = async (req: Request & { user?: any }, res: Respon
 
     const result = await BetResult.aggregate(aggregationPipeline);
     if(result.length) {
-        return res.status(201).json(statuses["0314"]);
+        return res.status(403).json(statuses["0314"]);
     }
     
     const newBetResult = new BetResult({
@@ -210,7 +211,7 @@ export const getBetResult = async (req: Request & { user?: any }, res: Response)
         },
         {
             $project: {
-                _id: 0,
+                _id: 1,
                 schedule: 1,
                 number: 1,
                 time: 1,
@@ -223,6 +224,22 @@ export const getBetResult = async (req: Request & { user?: any }, res: Response)
     return res.json(result);
 }
 
+export const deleteBetResult = async (req: Request, res: Response) => {
+    const { _id } = req.params;
+
+    try {
+        const betResult = await BetResult.findByIdAndDelete(_id);
+        
+        if (!betResult) {
+            return res.status(404).json({ error: "Bet result not found" });
+        }
+
+        return res.json(statuses["0300"]);
+    } catch (error) {
+        console.log("@deleteBetResult error", error);
+        return res.status(500).json(statuses["0900"]);
+    }
+};
 
 export const numberStats = async (req: Request & { user?: any }, res: Response) => {
     try {
@@ -280,6 +297,119 @@ export const numberStats = async (req: Request & { user?: any }, res: Response) 
 
 export const getAll = async (req: Request & { user?: any }, res: Response) => {
     try {
+            // Check if there are any validation errors
+            const error = new RequestValidator().getAllBetsAPI(req.query)
+            if (error) {
+                res.status(400).json({ 
+                    error: error.details[0].message.replace(/['"]/g, '') 
+                });
+                return;
+            }
+            
+            const { time, type, schedule, user, page: currentPage, limit: currentLimit  } = req.query;
+            
+            const page = parseInt(currentPage as string) || 1;
+            const limit = parseInt(currentLimit as string) || 10;
+            const skip = (page - 1) * limit;
+
+            const pipeline = [];
+            if (time || type || schedule || user) {
+                // Convert schedule to "YYYY-MM-DD" format for matching
+                const formattedSchedule = schedule 
+                ? new Date(schedule as unknown as Date).toISOString().substring(0, 10) 
+                : new Date().toISOString().substring(0, 10);
+                
+                // If any of the query parameters is present, add the $match stage
+                const matchStage: any = {};
+                
+                if (formattedSchedule) {
+                    matchStage.$expr = {
+                        $eq: [
+                            { $dateToString: { format: '%Y-%m-%d', date: '$schedule', timezone: 'UTC' } },
+                            formattedSchedule,
+                        ],
+                    };
+                }
+                
+                if (type) {
+                    matchStage.type = type;
+                }
+                if (time) {
+                    matchStage.time = time;
+                }
+                if (user) {
+                    matchStage.user = new mongoose.Types.ObjectId(user as string);
+                }
+                pipeline.push({ $match: matchStage });
+            }
+
+            pipeline.push(
+                {
+                    $lookup: {
+                        from: 'profiles', // Assuming your User collection is named 'profiles'
+                        localField: 'user',
+                        foreignField: 'user',
+                        as: 'profile',
+                    },
+                },
+                {
+                    $unwind: '$profile',
+                },
+                {
+                    $project: {
+                        type: 1,
+                        number: 1,
+                        reference: 1,
+                        schedule: {
+                            $dateToString: {
+                                date: '$schedule',
+                                format: '%Y-%m-%d',
+                                timezone: 'UTC',
+                            },
+                        },
+                        time: 1,
+                        amount: 1,
+                        rambled: 1,
+                        profile: {
+                            firstName: 1,
+                            lastName: 1,
+                            birthdate: 1,
+                            address: 1,
+                            contactNumber: 1,
+                            gender: 1,
+                            verified: 1,
+                        },
+                    },
+                },
+            );
+            
+            const result = await Bet.aggregate(pipeline);
+            if (result.length === 0) {
+                res.status(200).json([]);
+                return;
+            }
+            const mergedData = result.reduce((result, current) => {
+                const existingItem = result.find((item: IBet) => item.reference === current.reference);
+                if (existingItem) {
+                    existingItem.amount += current.amount;
+                } else {
+                    result.push({ ...current });
+                }
+                return result;
+            }, []);
+            
+            return res
+                .header({ "x-bets-count": result.length })
+                .status(200)
+                .json(mergedData);
+        } catch (error) {
+            console.log('@getAll error', error)
+            res.status(500).json(error);
+        }
+}
+
+export const getMyBets = async (req: Request & { user?: any }, res: Response) => {
+    try {
         // Check if there are any validation errors
         const error = new RequestValidator().getAllBetsAPI(req.query)
         if (error) {
@@ -289,14 +419,14 @@ export const getAll = async (req: Request & { user?: any }, res: Response) => {
             return;
         }
         
-        const { time, type, schedule, user } = req.query;
+        const { time, type, schedule } = req.query;
         
         const pipeline = [];
-        if (time || type || schedule || user) {
+        if (time || type || schedule) {
             // Convert schedule to "YYYY-MM-DD" format for matching
             const formattedSchedule = schedule 
-            ? new Date(schedule as unknown as Date).toISOString().substring(0, 10) 
-            : new Date().toISOString().substring(0, 10);
+                ? new Date(schedule as unknown as Date).toISOString().substring(0, 10) 
+                : new Date().toISOString().substring(0, 10);
             
             // If any of the query parameters is present, add the $match stage
             const matchStage: any = {};
@@ -316,10 +446,12 @@ export const getAll = async (req: Request & { user?: any }, res: Response) => {
             if (time) {
                 matchStage.time = time;
             }
-            if (user) {
-                matchStage.user = new mongoose.Types.ObjectId(user as string);
-            }
-            pipeline.push({ $match: matchStage });
+
+            pipeline.push({ 
+                $match: { 
+                    ...matchStage, 
+                    user: new mongoose.Types.ObjectId(req.user.value as string)} 
+            });
         }
         pipeline.push(
             {
@@ -336,6 +468,7 @@ export const getAll = async (req: Request & { user?: any }, res: Response) => {
             {
                 $project: {
                     type: 1,
+                    number: 1,
                     schedule: {
                         $dateToString: {
                             date: '$schedule',
@@ -346,7 +479,6 @@ export const getAll = async (req: Request & { user?: any }, res: Response) => {
                     time: 1,
                     amount: 1,
                     rambled: 1,
-                    number: 1,
                     reference: 1,
                     profile: {
                         firstName: 1,
@@ -382,6 +514,13 @@ export const getAll = async (req: Request & { user?: any }, res: Response) => {
             console.log('@getAll error', error)
             res.status(500).json(error);
         }
+}
+
+export const getDailyBetResults = async (req: Request & { user?: any }, res: Response) => {
+    const myBets = await getMyBetsRepository({ user: req.user.value });
+    const todaysResult = await getBetResultRepository();
+
+    return res.status(200).json(winCount(todaysResult, myBets));
 }
 
 export const getDailyTotal = async (req: Request & { user?: any }, res: Response) => {
@@ -435,6 +574,41 @@ export const getDailyTotal = async (req: Request & { user?: any }, res: Response
         res.status(500).json(error);
     }
 }
+
+const winCount = (dailyResults: any[], bets: any[]): any[] => {
+    const winCounts: any[] = [];
+
+    dailyResults.forEach((dailyResult) => {
+        const { number, type, time, schedule } = dailyResult;
+        const matchedItems = bets.filter(
+            (bet) => {
+                return bet.type === type &&
+                    bet.time === time &&
+                    bet.schedule === schedule.toISOString().substring(0, 10) &&
+                    (bet.rambled ? areEquivalentNumbers(bet.number, number) : bet.number === number)
+
+            } 
+        );
+
+        const wins = matchedItems.length;
+        winCounts.push({ number, wins, time, type, schedule });
+    });
+
+    return winCounts;
+};
+
+
+const areEquivalentNumbers = (num1: string, num2: string): boolean => {
+    if (num1.length !== num2.length) {
+        return false;
+    }
+
+    const sortedNum1 = num1.split('').sort().join('');
+    const sortedNum2 = num2.split('').sort().join('');
+
+    return sortedNum1 === sortedNum2;
+};
+
 
 const isSoldOutNumber = async (number: string, schedule: Date, time: string, ramble: boolean): Promise<{ full: boolean, total: number, limit: number } | undefined> => {
         try {

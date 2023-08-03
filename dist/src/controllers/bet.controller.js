@@ -20,7 +20,6 @@ const validation_util_1 = require("../../__core/utils/validation.util");
 const api_statuses_const_1 = require("../const/api-statuses.const");
 const activity_event_1 = require("../events/activity.event");
 const activity_enum_1 = require("../enum/activity.enum");
-const mongodb_1 = require("mongodb");
 const bet_result_model_1 = require("../models/bet-result.model");
 const generator_util_1 = require("../../__core/utils/generator.util");
 const bet_repository_1 = require("../repositories/bet.repository");
@@ -501,7 +500,6 @@ const getDailyTotal = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                             formattedSchedule,
                         ],
                     },
-                    user: new mongodb_1.ObjectId(req.user.value)
                 },
             },
             {

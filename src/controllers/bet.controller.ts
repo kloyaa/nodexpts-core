@@ -522,7 +522,7 @@ export const getDailyBetResults = async (req: Request & { user?: any }, res: Res
     return res.status(200).json(winCount(todaysResult, myBets));
 }
 
-export const getDailyTotal = async (req: Request & { user?: any }, res: Response) => {
+export const getDailyTotal = async (req: Request, res: Response) => {
     try {
         const { schedule } = req.query;
 

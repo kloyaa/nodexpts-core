@@ -8,7 +8,6 @@ import { IBet, TNumbeClassification } from '../interface/bet.interface';
 import { emitter } from '../events/activity.event';
 import { IActivity } from '../../__core/interfaces/schema.interface';
 import { BetActivityType, BetEventName } from '../enum/activity.enum';
-import { ObjectId } from 'mongodb';
 import { BetResult } from '../models/bet-result.model';
 import { generateReference } from '../../__core/utils/generator.util';
 import { getBetResultRepository, getMyBetsRepository } from '../repositories/bet.repository';
@@ -551,7 +550,6 @@ export const getDailyTotal = async (req: Request & { user?: any }, res: Response
                             formattedSchedule,
                         ],
                     },
-                    user: new ObjectId(req.user.value)
                 },
             },
             {

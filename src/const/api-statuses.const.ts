@@ -31,6 +31,14 @@ export const statuses = {
         message: "Ramble numbers should contains 3 unique numbers.",
         code: "0315",
     },
+    "0316": {
+        message: "Reference not found. Please double check and try again.",
+        code: "0316",
+    },
+    "0317": {
+        message: "The reference is valid, but it appears that it does not belong to you.",
+        code: "0317",
+    },
     "0900": {
         message: "Something went wrong. Please try again later.",
         code: "0900",

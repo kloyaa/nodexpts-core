@@ -15,7 +15,7 @@ import { getBetResultRepository, getMyBetsRepository } from '../repositories/bet
 const validTimeForSTL = ["10:30 AM", "3:00 PM", "8:00 PM"];
 const validTimeFor3D = ["2:00 PM", "5:00 PM", "9:00 PM"];
 
-export const placeBet = async (req: Request & { user?: any }, res: Response) => {
+export const createBet = async (req: Request & { user?: any }, res: Response) => {
     try {
         // Check if there are any validation errors
         const error = new RequestValidator().createBetAPI(req.body)
@@ -104,7 +104,7 @@ export const placeBet = async (req: Request & { user?: any }, res: Response) => 
                 newNumberStat.save()
             ]);
 
-            emitter.emit(BetEventName.PLACE_BET, {
+            emitter.emit(BetEventName.BET_ACTIVITY, {
                 user: req.user.value,
                 description: BetActivityType.PLACE_BET,
             } as IActivity);
@@ -190,12 +190,41 @@ export const createBetResult = async (req: Request & { user?: any }, res: Respon
     return res.status(201).json(statuses["0300"]);
 }
 
-export const getAllBetResults = async (req: Request & { user?: any }, res: Response) => {
-    const result = await BetResult.find({});
-    return res.json(result);
+export const getByReference = async (req: Request & { user?: any }, res: Response) => {
+    const reference = req.params.reference;
+
+    const pipeline = [
+        {
+            $match: {
+                reference: reference,
+                user: new mongoose.Types.ObjectId(req.user.value as string),
+            }
+        },
+        { $limit: 1 }
+    ];
+
+    const result: IBet = (await Bet.aggregate(pipeline).exec()).at(0);
+    
+    if(!result) {
+        return res.json(statuses["0316"]);
+    }
+
+    const user = req.user.value.toString()+"2";
+    const owner = result.user.toString();
+
+    if(result && user !== owner) {
+        return res.json(statuses["0317"]);
+    }
+
+    return res.status(200).json(statuses["0300"]);
 }
 
-export const getBetResult = async (req: Request & { user?: any }, res: Response) => {
+export const getAllBetResults = async (req: Request & { user?: any }, res: Response) => {
+    const result = await BetResult.find({});
+    return res.status(200).json(result);
+}
+
+export const getBetResultsBySchedule = async (req: Request & { user?: any }, res: Response) => {
     const { schedule } = req.query;
 
     const formattedSchedule = schedule 
@@ -225,7 +254,7 @@ export const getBetResult = async (req: Request & { user?: any }, res: Response)
     ];
 
     const result = await BetResult.aggregate(aggregationPipeline);
-    return res.json(result);
+    return res.status(200).json(result);
 }
 
 export const deleteBetResult = async (req: Request & { user?: any }, res: Response) => {
@@ -250,7 +279,7 @@ export const deleteBetResult = async (req: Request & { user?: any }, res: Respon
     }
 };
 
-export const numberStats = async (req: Request & { user?: any }, res: Response) => {
+export const getNumberFormulated = async (req: Request & { user?: any }, res: Response) => {
     try {
         const { schedule } = req.query;
 
@@ -304,7 +333,7 @@ export const numberStats = async (req: Request & { user?: any }, res: Response) 
     }
 };
 
-export const getAll = async (req: Request & { user?: any }, res: Response) => {
+export const getAllBets = async (req: Request & { user?: any }, res: Response) => {
     try {
             // Check if there are any validation errors
             const error = new RequestValidator().getAllBetsAPI(req.query)
@@ -407,10 +436,7 @@ export const getAll = async (req: Request & { user?: any }, res: Response) => {
                 return result;
             }, []);
             
-            return res
-                .header({ "x-bets-count": result.length })
-                .status(200)
-                .json(mergedData);
+            return res.status(200).json(mergedData);
         } catch (error) {
             console.log('@getAll error', error)
             res.status(500).json(error);
@@ -525,14 +551,14 @@ export const getMyBets = async (req: Request & { user?: any }, res: Response) =>
         }
 }
 
-export const getDailyBetResults = async (req: Request & { user?: any }, res: Response) => {
+export const getMyBetResultsWithWins = async (req: Request & { user?: any }, res: Response) => {
     const myBets = await getMyBetsRepository({ user: req.user.value });
     const todaysResult = await getBetResultRepository();
 
     return res.status(200).json(winCount(todaysResult, myBets));
 }
 
-export const getDailyTotal = async (req: Request, res: Response) => {
+export const getDailyGross = async (req: Request, res: Response) => {
     try {
         const { schedule } = req.query;
 
@@ -605,7 +631,6 @@ const winCount = (dailyResults: any[], bets: any[]): any[] => {
     return winCounts;
 };
 
-
 const areEquivalentNumbers = (num1: string, num2: string): boolean => {
     if (num1.length !== num2.length) {
         return false;
@@ -616,7 +641,6 @@ const areEquivalentNumbers = (num1: string, num2: string): boolean => {
 
     return sortedNum1 === sortedNum2;
 };
-
 
 const isSoldOutNumber = async (number: string, schedule: Date, time: string, ramble: boolean): Promise<{ full: boolean, total: number, limit: number } | undefined> => {
         try {
@@ -652,7 +676,6 @@ const isSoldOutNumber = async (number: string, schedule: Date, time: string, ram
 const allowedInRamble = (input: string) => {
     const numStr = input.toString();
     const digitSet = new Set(numStr);
-  
     return digitSet.size === numStr.length;
 };
 
@@ -674,7 +697,6 @@ const breakRambleNumbers = (input: string): string[] => {
 
     return Array.from(result);
 };
-
 
 export const getNumbersTotalAmount = (arr: IBet[]): number => {
     let totalAmount = 0;

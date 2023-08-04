@@ -7,11 +7,13 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
 const db_util_1 = __importDefault(require("../__core/utils/db.util"));
+const path_1 = __importDefault(require("path"));
 const auth_route_1 = __importDefault(require("./routes/auth.route"));
 const profile_route_1 = __importDefault(require("./routes/profile.route"));
 const bet_route_1 = __importDefault(require("./routes/bet.route"));
 const employee_route_1 = __importDefault(require("./routes/employee.route"));
 const activity_route_1 = __importDefault(require("./routes/activity.route"));
+const config_route_1 = __importDefault(require("./routes/config.route"));
 const is_maintenance_mode_middleware_1 = require("../__core/middlewares/is-maintenance-mode.middleware");
 const app = (0, express_1.default)();
 const envVars = {
@@ -32,6 +34,7 @@ const envVars = {
 app.use((0, helmet_1.default)()); // Apply standard security headers
 app.use((0, cors_1.default)()); // Enable CORS for all routes
 app.use(express_1.default.json());
+app.use(express_1.default.static(path_1.default.join(__dirname, 'public')));
 // Routes
 app.use(is_maintenance_mode_middleware_1.maintenanceModeMiddleware);
 app.use('/api', auth_route_1.default);
@@ -39,7 +42,10 @@ app.use('/api', profile_route_1.default);
 app.use('/api', bet_route_1.default);
 app.use('/api', employee_route_1.default);
 app.use('/api', activity_route_1.default);
-app.get('/', (_, res) => res.send('Express Typescript on Vercel'));
+app.use('/api', config_route_1.default);
+app.get('/', (_, res) => {
+    res.sendFile('index.html', { root: path_1.default.join(__dirname, 'public') });
+});
 // Connect to MongoDB
 (0, db_util_1.default)();
 // Start the server

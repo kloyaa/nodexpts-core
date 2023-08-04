@@ -2,12 +2,14 @@ import express, { Application } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import connectDB from '../__core/utils/db.util';
+import path from 'path';
 
 import authRoute from './routes/auth.route';
 import profileRoute from './routes/profile.route';
 import betRoute from './routes/bet.route';
 import employeeRoute from './routes/employee.route';
 import acitvityRoute from './routes/activity.route';
+import configRoute from './routes/config.route';
 
 import { maintenanceModeMiddleware } from '../__core/middlewares/is-maintenance-mode.middleware';
 
@@ -32,6 +34,7 @@ const envVars = {
 app.use(helmet()); // Apply standard security headers
 app.use(cors()); // Enable CORS for all routes
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
 app.use(maintenanceModeMiddleware);
@@ -40,7 +43,10 @@ app.use('/api', profileRoute);
 app.use('/api', betRoute);
 app.use('/api', employeeRoute);
 app.use('/api', acitvityRoute);
-app.get('/', (_, res) => res.send('Express Typescript on Vercel'));
+app.use('/api', configRoute);
+app.get('/', (_, res) => {
+    res.sendFile('index.html', { root: path.join(__dirname, 'public') });
+});
 
 // Connect to MongoDB
 connectDB();

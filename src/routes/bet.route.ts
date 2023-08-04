@@ -1,5 +1,17 @@
 import { Router } from 'express';
-import { placeBet, getAll, numberStats, getDailyTotal, getAllBetResults, getBetResult, createBetResult, getMyBets, getDailyBetResults, deleteBetResult } from '../controllers/bet.controller';
+import { 
+    createBet,
+    getAllBets,
+    getAllBetResults, 
+    createBetResult, 
+    getMyBets, 
+    deleteBetResult,
+    getByReference,
+    getMyBetResultsWithWins,
+    getBetResultsBySchedule,
+    getNumberFormulated,
+    getDailyGross
+} from '../controllers/bet.controller';
 import { isAuthenticated } from '../../__core/middlewares/jwt.middleware';
 import { isUserProfileCreated } from '../../__core/middlewares/is-user-profile-created.middleware';
 const router = Router();
@@ -7,13 +19,19 @@ const router = Router();
 router.post('/bet/v1/place', 
     isAuthenticated, 
     isUserProfileCreated, 
-    placeBet
+    createBet
 );
 
 router.get('/bet/v1/bets', 
     isAuthenticated, 
     isUserProfileCreated, 
-    getAll
+    getAllBets
+);
+
+router.get('/bet/v1/ref/:reference', 
+    isAuthenticated, 
+    isUserProfileCreated, 
+    getByReference
 );
 
 router.get('/bet/v1/my-bets', 
@@ -25,7 +43,7 @@ router.get('/bet/v1/my-bets',
 router.get('/bet/v1/daily-bet-results', 
     isAuthenticated, 
     isUserProfileCreated, 
-    getDailyBetResults
+    getMyBetResultsWithWins
 );
 
 router.post('/bet/v1/result', 
@@ -37,7 +55,7 @@ router.post('/bet/v1/result',
 router.get('/bet/v1/daily-result', 
     isAuthenticated, 
     isUserProfileCreated, 
-    getBetResult
+    getBetResultsBySchedule
 );
 
 router.delete('/bet/v1/remove/:_id', 
@@ -55,12 +73,12 @@ router.get('/bet/v1/results',
 router.get('/bet/v1/numberstats', 
     isAuthenticated, 
     isUserProfileCreated, 
-    numberStats
+    getNumberFormulated
 );
 router.get('/bet/v1/daily-total', 
     isAuthenticated, 
     isUserProfileCreated, 
-    getDailyTotal
+    getDailyGross
 );
 
 export default router;

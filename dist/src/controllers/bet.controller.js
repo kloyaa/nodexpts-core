@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getNumbersTotalAmount = exports.getDailyTotal = exports.getDailyBetResults = exports.getMyBets = exports.getAll = exports.numberStats = exports.deleteBetResult = exports.getBetResult = exports.getAllBetResults = exports.createBetResult = exports.placeBet = void 0;
+exports.getNumbersTotalAmount = exports.getDailyGross = exports.getMyBetResultsWithWins = exports.getMyBets = exports.getAllBets = exports.getNumberFormulated = exports.deleteBetResult = exports.getBetResultsBySchedule = exports.getAllBetResults = exports.getByReference = exports.createBetResult = exports.createBet = void 0;
 require('dotenv').config();
 const mongoose_1 = __importDefault(require("mongoose")); // Import the mongoose library
 const bet_model_1 = require("../models/bet.model");
@@ -25,7 +25,7 @@ const generator_util_1 = require("../../__core/utils/generator.util");
 const bet_repository_1 = require("../repositories/bet.repository");
 const validTimeForSTL = ["10:30 AM", "3:00 PM", "8:00 PM"];
 const validTimeFor3D = ["2:00 PM", "5:00 PM", "9:00 PM"];
-const placeBet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createBet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Check if there are any validation errors
         const error = new validation_util_1.RequestValidator().createBetAPI(req.body);
@@ -101,7 +101,7 @@ const placeBet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 newBet.save(),
                 newNumberStat.save()
             ]);
-            activity_event_1.emitter.emit(activity_enum_1.BetEventName.PLACE_BET, {
+            activity_event_1.emitter.emit(activity_enum_1.BetEventName.BET_ACTIVITY, {
                 user: req.user.value,
                 description: activity_enum_1.BetActivityType.PLACE_BET,
             });
@@ -114,7 +114,7 @@ const placeBet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(500).json(error);
     }
 });
-exports.placeBet = placeBet;
+exports.createBet = createBet;
 const createBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const error = new validation_util_1.RequestValidator().createBetResultAPI(req.body);
     if (error) {
@@ -173,12 +173,35 @@ const createBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function
     return res.status(201).json(api_statuses_const_1.statuses["0300"]);
 });
 exports.createBetResult = createBetResult;
+const getByReference = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const reference = req.params.reference;
+    const pipeline = [
+        {
+            $match: {
+                reference: reference,
+                user: new mongoose_1.default.Types.ObjectId(req.user.value),
+            }
+        },
+        { $limit: 1 }
+    ];
+    const result = (yield bet_model_1.Bet.aggregate(pipeline).exec()).at(0);
+    if (!result) {
+        return res.json(api_statuses_const_1.statuses["0316"]);
+    }
+    const user = req.user.value.toString() + "2";
+    const owner = result.user.toString();
+    if (result && user !== owner) {
+        return res.json(api_statuses_const_1.statuses["0317"]);
+    }
+    return res.status(200).json(api_statuses_const_1.statuses["0300"]);
+});
+exports.getByReference = getByReference;
 const getAllBetResults = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield bet_result_model_1.BetResult.find({});
-    return res.json(result);
+    return res.status(200).json(result);
 });
 exports.getAllBetResults = getAllBetResults;
-const getBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getBetResultsBySchedule = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { schedule } = req.query;
     const formattedSchedule = schedule
         ? new Date(schedule).toISOString().substring(0, 10)
@@ -205,9 +228,9 @@ const getBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         },
     ];
     const result = yield bet_result_model_1.BetResult.aggregate(aggregationPipeline);
-    return res.json(result);
+    return res.status(200).json(result);
 });
-exports.getBetResult = getBetResult;
+exports.getBetResultsBySchedule = getBetResultsBySchedule;
 const deleteBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { _id } = req.params;
     try {
@@ -227,7 +250,7 @@ const deleteBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.deleteBetResult = deleteBetResult;
-const numberStats = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getNumberFormulated = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schedule } = req.query;
         const formattedSchedule = schedule
@@ -278,8 +301,8 @@ const numberStats = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         res.status(500).json(error);
     }
 });
-exports.numberStats = numberStats;
-const getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getNumberFormulated = getNumberFormulated;
+const getAllBets = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Check if there are any validation errors
         const error = new validation_util_1.RequestValidator().getAllBetsAPI(req.query);
@@ -370,17 +393,14 @@ const getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             }
             return result;
         }, []);
-        return res
-            .header({ "x-bets-count": result.length })
-            .status(200)
-            .json(mergedData);
+        return res.status(200).json(mergedData);
     }
     catch (error) {
         console.log('@getAll error', error);
         res.status(500).json(error);
     }
 });
-exports.getAll = getAll;
+exports.getAllBets = getAllBets;
 const getMyBets = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Check if there are any validation errors
@@ -476,13 +496,13 @@ const getMyBets = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.getMyBets = getMyBets;
-const getDailyBetResults = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getMyBetResultsWithWins = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const myBets = yield (0, bet_repository_1.getMyBetsRepository)({ user: req.user.value });
     const todaysResult = yield (0, bet_repository_1.getBetResultRepository)();
     return res.status(200).json(winCount(todaysResult, myBets));
 });
-exports.getDailyBetResults = getDailyBetResults;
-const getDailyTotal = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getMyBetResultsWithWins = getMyBetResultsWithWins;
+const getDailyGross = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { schedule } = req.query;
         const formattedSchedule = schedule
@@ -530,7 +550,7 @@ const getDailyTotal = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         res.status(500).json(error);
     }
 });
-exports.getDailyTotal = getDailyTotal;
+exports.getDailyGross = getDailyGross;
 const winCount = (dailyResults, bets) => {
     const winCounts = [];
     dailyResults.forEach((dailyResult) => {

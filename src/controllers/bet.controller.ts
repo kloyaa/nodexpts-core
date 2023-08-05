@@ -622,8 +622,8 @@ export const checkNumberAvailability = async (req: Request, res: Response) => {
         }
 
         const { schedule, time, amount, rambled, number, type } = req.query as any;
-
-        const isSoldOut = await isSoldOutNumber(number, schedule, time, rambled);
+        const isRambled = rambled === "true";
+        const isSoldOut = await isSoldOutNumber(number, schedule, time, isRambled);
         if(isSoldOut?.full) {
             return res.status(403).json(BetStatuses["0312"]);
         }
@@ -641,6 +641,11 @@ export const checkNumberAvailability = async (req: Request, res: Response) => {
             return res.status(403).json({
                 ...BetStatuses["0310"], data: `Time ${validTimeFor3D.join(", ")}`
             });
+        }
+        if(isRambled) {
+            if(!allowedInRamble(number)) {
+                return res.status(201).json(statuses["0315"]);
+            }
         }
         return res.status(200).json(BetStatuses["0300"]);
     } catch (error) {
@@ -706,7 +711,6 @@ const isSoldOutNumber = async (number: string, schedule: Date, time: string, ram
         const total = getNumbersTotalAmount(result);
         const limit = getNumberAndLimitClassification(number, ramble).limit;
         
-        console.log({ full: total >= limit, limit, total })
         return { full: total >= limit, limit, total };
     } catch (error) {
         console.log('@isSoldOut error', error);

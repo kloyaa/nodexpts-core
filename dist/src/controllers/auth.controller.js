@@ -87,7 +87,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
     catch (error) {
         console.log('@login error', error);
-        res.status(500).json(error);
+        res.status(401).json(api_statuses_const_1.statuses["0900"]);
     }
 });
 exports.login = login;
@@ -111,7 +111,7 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         // Check if the username or email already exists
         const existingUser = yield user_model_1.User.findOne().or([{ username }, { email }]).exec();
         if (existingUser) {
-            res.status(403).json(api_statuses_const_1.statuses["0052"]);
+            res.status(401).json(api_statuses_const_1.statuses["0052"]);
             return;
         }
         // Generate a salt for bcrypt
@@ -153,7 +153,7 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
     catch (error) {
         console.log('@register error', error);
-        res.status(500).json(error);
+        res.status(401).json(api_statuses_const_1.statuses["0900"]);
     }
 });
 exports.register = register;
@@ -171,21 +171,21 @@ const verifyToken = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         const secrets = yield (0, aws_service_1.getAwsSecrets)();
         const decryptedToken = (0, crypto_util_1.decrypt)(token, secrets === null || secrets === void 0 ? void 0 : secrets.CRYPTO_SECRET);
         if (!decryptedToken) {
-            return res.status(403).json({ error: 'Failed to authenticate token.' });
+            return res.status(401).json({ error: 'Failed to authenticate token.' });
         }
         if ((0, methods_util_1.isEmpty)(secrets === null || secrets === void 0 ? void 0 : secrets.JWT_SECRET_KEY)) {
             return res.status(401).json({ error: "Aws S3 JWT_SECRET is incorrect/invalid" });
         }
         jsonwebtoken_1.default.verify(decryptedToken, secrets === null || secrets === void 0 ? void 0 : secrets.JWT_SECRET_KEY, (err, decoded) => {
             if (err) {
-                return res.status(403).json({ error: 'Failed to authenticate token.' });
+                return res.status(401).json({ error: 'Failed to authenticate token.' });
             }
             return res.status(200).json(api_statuses_const_1.statuses["00"]);
         });
     }
     catch (error) {
         console.log(error);
-        return res.status(403).json({ error: 'Failed to authenticate token.' });
+        res.status(401).json(api_statuses_const_1.statuses["0900"]);
     }
 });
 exports.verifyToken = verifyToken;

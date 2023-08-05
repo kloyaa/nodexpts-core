@@ -88,7 +88,7 @@ export const login = async (req: Request & { from: string }, res: Response) => {
         });
     } catch (error) {
         console.log('@login error', error)
-        res.status(500).json(error);
+        res.status(401).json(statuses["0900"]);    
     }
 };
 
@@ -116,7 +116,7 @@ export const register = async (req: Request & { from: string }, res: Response) =
         // Check if the username or email already exists
         const existingUser = await User.findOne().or([{ username }, { email }]).exec();
         if (existingUser) {
-            res.status(403).json(statuses["0052"]);
+            res.status(401).json(statuses["0052"]);
             return;
         }
     
@@ -169,7 +169,7 @@ export const register = async (req: Request & { from: string }, res: Response) =
         });
     } catch (error) {
         console.log('@register error', error)
-        res.status(500).json(error);
+        res.status(401).json(statuses["0900"]);    
     }
 }
 
@@ -189,7 +189,7 @@ export const verifyToken = async (req: Request & { from: string }, res: Response
 
         const decryptedToken = decrypt(token, secrets?.CRYPTO_SECRET as string)
         if(!decryptedToken) {
-            return res.status(403).json({ error: 'Failed to authenticate token.' });
+            return res.status(401).json({ error: 'Failed to authenticate token.' });
         }
 
         if(isEmpty(secrets?.JWT_SECRET_KEY)) {
@@ -198,13 +198,13 @@ export const verifyToken = async (req: Request & { from: string }, res: Response
 
         jwt.verify(decryptedToken, secrets?.JWT_SECRET_KEY as string, (err: any, decoded: any) => {
             if (err) {
-                return res.status(403).json({ error: 'Failed to authenticate token.' });
+                return res.status(401).json({ error: 'Failed to authenticate token.' });
             }
             return res.status(200).json(statuses["00"]);
         });
     } catch (error) {
         console.log(error)
-        return res.status(403).json({ error: 'Failed to authenticate token.' });
+        res.status(401).json(statuses["0900"]);    
     }
 }
 

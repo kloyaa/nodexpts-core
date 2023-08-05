@@ -15,6 +15,7 @@ router.get('/bet/v1/daily-result', jwt_middleware_1.isAuthenticated, is_user_pro
 router.delete('/bet/v1/remove/:_id', jwt_middleware_1.isAuthenticated, is_user_profile_created_middleware_1.isUserProfileCreated, bet_controller_1.deleteBetResult);
 router.get('/bet/v1/results', jwt_middleware_1.isAuthenticated, is_user_profile_created_middleware_1.isUserProfileCreated, bet_controller_1.getAllBetResults);
 router.get('/bet/v1/numberstats', jwt_middleware_1.isAuthenticated, is_user_profile_created_middleware_1.isUserProfileCreated, bet_controller_1.getNumberFormulated);
+router.get('/bet/v1/number-availability', jwt_middleware_1.isAuthenticated, is_user_profile_created_middleware_1.isUserProfileCreated, bet_controller_1.checkNumberAvailability);
 router.get('/bet/v1/daily-total', jwt_middleware_1.isAuthenticated, is_user_profile_created_middleware_1.isUserProfileCreated, bet_controller_1.getDailyGross);
 exports.default = router;
 //# sourceMappingURL=bet.route.js.map

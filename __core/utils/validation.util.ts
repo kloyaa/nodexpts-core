@@ -11,7 +11,20 @@ export class RequestValidator {
 
         return error;
     }
-    
+
+    checkNumberAvailabilityAPI(query: any) {
+        const { error } = Joi.object({
+            schedule: Joi.string().required(),
+            time: Joi.string().required(),
+            number: Joi.string().required().length(3),
+            amount: Joi.number().min(1).required(),
+            rambled: Joi.boolean().required(),
+            type: Joi.string().valid("3D", "STL").required(),
+        }).validate(query);
+
+        return error;
+    }
+
     verifyTokenAPI(body: any) {
         const { error } = Joi.object({
             token: Joi.string().required(),

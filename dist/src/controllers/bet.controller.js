@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getNumbersTotalAmount = exports.getDailyGross = exports.getMyBetResultsWithWins = exports.getMyBets = exports.getAllBets = exports.getNumberFormulated = exports.deleteBetResult = exports.getBetResultsBySchedule = exports.getAllBetResults = exports.getByReference = exports.createBetResult = exports.createBet = void 0;
+exports.getNumbersTotalAmount = exports.checkNumberAvailability = exports.getDailyGross = exports.getMyBetResultsWithWins = exports.getMyBets = exports.getAllBets = exports.getNumberFormulated = exports.deleteBetResult = exports.getBetResultsBySchedule = exports.getAllBetResults = exports.getByReference = exports.createBetResult = exports.createBet = void 0;
 require('dotenv').config();
 const mongoose_1 = __importDefault(require("mongoose")); // Import the mongoose library
 const bet_model_1 = require("../models/bet.model");
@@ -551,6 +551,38 @@ const getDailyGross = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.getDailyGross = getDailyGross;
+const checkNumberAvailability = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Check if there are any validation errors
+        const error = new validation_util_1.RequestValidator().checkNumberAvailabilityAPI(req.query);
+        if (error) {
+            res.status(400).json({
+                error: error.details[0].message.replace(/['"]/g, '')
+            });
+            return;
+        }
+        const { schedule, time, amount, rambled, number, type } = req.query;
+        const isSoldOut = yield isSoldOutNumber(number, schedule, time, rambled);
+        if (isSoldOut === null || isSoldOut === void 0 ? void 0 : isSoldOut.full) {
+            return res.status(403).json(api_statuses_const_1.statuses["0312"]);
+        }
+        if (((isSoldOut === null || isSoldOut === void 0 ? void 0 : isSoldOut.total) + amount) > (isSoldOut === null || isSoldOut === void 0 ? void 0 : isSoldOut.limit)) {
+            return res.status(403).json(api_statuses_const_1.statuses["0313"]);
+        }
+        if (type === "STL" && !validTimeForSTL.includes(time)) {
+            return res.status(403).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0310"]), { data: `Time ${validTimeForSTL.join(", ")}` }));
+        }
+        if (type === "3D" && !validTimeFor3D.includes(time)) {
+            return res.status(403).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0310"]), { data: `Time ${validTimeFor3D.join(", ")}` }));
+        }
+        return res.status(200).json(api_statuses_const_1.statuses["0300"]);
+    }
+    catch (error) {
+        console.log('@checkNumberAvailability error', error);
+        res.status(500).json(error);
+    }
+});
+exports.checkNumberAvailability = checkNumberAvailability;
 const winCount = (dailyResults, bets) => {
     const winCounts = [];
     dailyResults.forEach((dailyResult) => {

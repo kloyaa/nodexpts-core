@@ -11,6 +11,7 @@ import { BetActivityType, BetEventName } from '../enum/activity.enum';
 import { BetResult } from '../models/bet-result.model';
 import { generateReference } from '../../__core/utils/generator.util';
 import { getBetResultRepository, getMyBetsRepository } from '../repositories/bet.repository';
+import { json } from 'body-parser';
 
 const validTimeForSTL = ["10:30 AM", "3:00 PM", "8:00 PM"];
 const validTimeFor3D = ["2:00 PM", "5:00 PM", "9:00 PM"];
@@ -605,6 +606,45 @@ export const getDailyGross = async (req: Request, res: Response) => {
         });
     } catch (error) {
         console.error('@getDailyTotal', error);
+        res.status(500).json(error);
+    }
+}
+
+export const checkNumberAvailability = async (req: Request, res: Response) => {
+    try {
+        // Check if there are any validation errors
+        const error = new RequestValidator().checkNumberAvailabilityAPI(req.query)
+        if (error) {
+            res.status(400).json({ 
+                error: error.details[0].message.replace(/['"]/g, '') 
+            });
+            return;
+        }
+
+        const { schedule, time, amount, rambled, number, type } = req.query as any;
+
+        const isSoldOut = await isSoldOutNumber(number, schedule, time, rambled);
+        if(isSoldOut?.full) {
+            return res.status(403).json(BetStatuses["0312"]);
+        }
+        if((isSoldOut?.total + amount) > isSoldOut?.limit!) {
+            return res.status(403).json(BetStatuses["0313"]);
+        }
+
+        if(type === "STL" && !validTimeForSTL.includes(time)){
+            return res.status(403).json({
+                ...BetStatuses["0310"], data: `Time ${validTimeForSTL.join(", ")}`
+            });
+        }
+
+        if(type === "3D" && !validTimeFor3D.includes(time)){
+            return res.status(403).json({
+                ...BetStatuses["0310"], data: `Time ${validTimeFor3D.join(", ")}`
+            });
+        }
+        return res.status(200).json(BetStatuses["0300"]);
+    } catch (error) {
+        console.log('@checkNumberAvailability error', error)
         res.status(500).json(error);
     }
 }

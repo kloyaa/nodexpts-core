@@ -10,7 +10,8 @@ import {
     getMyBetResultsWithWins,
     getBetResultsBySchedule,
     getNumberFormulated,
-    getDailyGross
+    getDailyGross,
+    checkNumberAvailability
 } from '../controllers/bet.controller';
 import { isAuthenticated } from '../../__core/middlewares/jwt.middleware';
 import { isUserProfileCreated } from '../../__core/middlewares/is-user-profile-created.middleware';
@@ -75,6 +76,13 @@ router.get('/bet/v1/numberstats',
     isUserProfileCreated, 
     getNumberFormulated
 );
+
+router.get('/bet/v1/number-availability', 
+    isAuthenticated, 
+    isUserProfileCreated, 
+    checkNumberAvailability
+);
+
 router.get('/bet/v1/daily-total', 
     isAuthenticated, 
     isUserProfileCreated, 

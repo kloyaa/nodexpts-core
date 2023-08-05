@@ -14,6 +14,17 @@ class RequestValidator {
         }).validate(body);
         return error;
     }
+    checkNumberAvailabilityAPI(query) {
+        const { error } = joi_1.default.object({
+            schedule: joi_1.default.string().required(),
+            time: joi_1.default.string().required(),
+            number: joi_1.default.string().required().length(3),
+            amount: joi_1.default.number().min(1).required(),
+            rambled: joi_1.default.boolean().required(),
+            type: joi_1.default.string().valid("3D", "STL").required(),
+        }).validate(query);
+        return error;
+    }
     verifyTokenAPI(body) {
         const { error } = joi_1.default.object({
             token: joi_1.default.string().required(),

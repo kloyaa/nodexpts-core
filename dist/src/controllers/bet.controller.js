@@ -562,7 +562,8 @@ const checkNumberAvailability = (req, res) => __awaiter(void 0, void 0, void 0, 
             return;
         }
         const { schedule, time, amount, rambled, number, type } = req.query;
-        const isSoldOut = yield isSoldOutNumber(number, schedule, time, rambled);
+        const isRambled = rambled === "true";
+        const isSoldOut = yield isSoldOutNumber(number, schedule, time, isRambled);
         if (isSoldOut === null || isSoldOut === void 0 ? void 0 : isSoldOut.full) {
             return res.status(403).json(api_statuses_const_1.statuses["0312"]);
         }
@@ -574,6 +575,11 @@ const checkNumberAvailability = (req, res) => __awaiter(void 0, void 0, void 0, 
         }
         if (type === "3D" && !validTimeFor3D.includes(time)) {
             return res.status(403).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0310"]), { data: `Time ${validTimeFor3D.join(", ")}` }));
+        }
+        if (isRambled) {
+            if (!allowedInRamble(number)) {
+                return res.status(201).json(api_statuses_const_1.statuses["0315"]);
+            }
         }
         return res.status(200).json(api_statuses_const_1.statuses["0300"]);
     }
@@ -627,7 +633,6 @@ const isSoldOutNumber = (number, schedule, time, ramble) => __awaiter(void 0, vo
         const result = yield bet_model_1.NumberStats.aggregate(pipeline);
         const total = (0, exports.getNumbersTotalAmount)(result);
         const limit = getNumberAndLimitClassification(number, ramble).limit;
-        console.log({ full: total >= limit, limit, total });
         return { full: total >= limit, limit, total };
     }
     catch (error) {

@@ -17,6 +17,7 @@ const getBetConfigs = (req, res) => {
             BET_TRIPLE_NUM_LIMIT: process.env.BET_TRIPLE_NUM_LIMIT,
             BET_NORMAL_NUM_LIMIT: process.env.BET_NORMAL_NUM_LIMIT,
             BET_RAMBLE_NUM_LIMIT: process.env.BET_RAMBLE_NUM_LIMIT,
+            BET_WIN_PER_PESO: process.env.BET_WIN_PER_PESO,
         };
         return res.status(200).json(envVars);
     }

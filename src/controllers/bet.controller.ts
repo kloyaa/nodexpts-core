@@ -53,7 +53,7 @@ export const createBet = async (req: Request & { user?: any }, res: Response) =>
         const reference = `SWSYA-${generateReference().toUpperCase().slice(0, 4)}-${generateReference().toUpperCase().slice(4)}`;
         if(rambled) {
             if(!allowedInRamble(number)) {
-                return res.status(201).json(statuses["0315"]);
+                return res.status(403).json(statuses["0315"]);
             }
             const numbers = breakRambleNumbers(number);
             const splittedValues = numbers.map((num) => ({
@@ -644,7 +644,7 @@ export const checkNumberAvailability = async (req: Request, res: Response) => {
         }
         if(isRambled) {
             if(!allowedInRamble(number)) {
-                return res.status(201).json(statuses["0315"]);
+                return res.status(403).json(statuses["0315"]);
             }
         }
         return res.status(200).json(BetStatuses["0300"]);

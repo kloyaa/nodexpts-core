@@ -53,7 +53,7 @@ const createBet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const reference = `SWSYA-${(0, generator_util_1.generateReference)().toUpperCase().slice(0, 4)}-${(0, generator_util_1.generateReference)().toUpperCase().slice(4)}`;
         if (rambled) {
             if (!allowedInRamble(number)) {
-                return res.status(201).json(api_statuses_const_1.statuses["0315"]);
+                return res.status(403).json(api_statuses_const_1.statuses["0315"]);
             }
             const numbers = breakRambleNumbers(number);
             const splittedValues = numbers.map((num) => ({
@@ -578,7 +578,7 @@ const checkNumberAvailability = (req, res) => __awaiter(void 0, void 0, void 0, 
         }
         if (isRambled) {
             if (!allowedInRamble(number)) {
-                return res.status(201).json(api_statuses_const_1.statuses["0315"]);
+                return res.status(403).json(api_statuses_const_1.statuses["0315"]);
             }
         }
         return res.status(200).json(api_statuses_const_1.statuses["0300"]);

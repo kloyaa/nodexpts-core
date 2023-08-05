@@ -116,8 +116,8 @@ export const createBet = async (req: Request & { user?: any }, res: Response) =>
         
         } catch (error) {
             console.log('@createBet error', error)
-            res.status(500).json(error);
-    }
+            res.status(500).json(statuses["0900"]);    
+        }
 };
 
 export const createBetResult = async (req: Request & { user?: any }, res: Response) => {
@@ -276,7 +276,7 @@ export const deleteBetResult = async (req: Request & { user?: any }, res: Respon
         return res.json(statuses["0300"]);
     } catch (error) {
         console.log("@deleteBetResult error", error);
-        return res.status(500).json(statuses["0900"]);
+        res.status(500).json(statuses["0900"]);    
     }
 };
 
@@ -330,7 +330,7 @@ export const getNumberFormulated = async (req: Request & { user?: any }, res: Re
         return res.json(result);
     } catch (error) {
         console.error('@numberStats', error);
-        res.status(500).json(error);
+        res.status(500).json(statuses["0900"]);    
     }
 };
 
@@ -440,7 +440,7 @@ export const getAllBets = async (req: Request & { user?: any }, res: Response) =
             return res.status(200).json(mergedData);
         } catch (error) {
             console.log('@getAll error', error)
-            res.status(500).json(error);
+            res.status(500).json(statuses["0900"]);    
         }
 }
 
@@ -548,7 +548,7 @@ export const getMyBets = async (req: Request & { user?: any }, res: Response) =>
             return res.status(200).json(mergedData);
         } catch (error) {
             console.log('@getAll error', error)
-            res.status(500).json(error);
+            res.status(500).json(statuses["0900"]);    
         }
 }
 
@@ -606,7 +606,7 @@ export const getDailyGross = async (req: Request, res: Response) => {
         });
     } catch (error) {
         console.error('@getDailyTotal', error);
-        res.status(500).json(error);
+        res.status(500).json(statuses["0900"]);    
     }
 }
 
@@ -650,7 +650,7 @@ export const checkNumberAvailability = async (req: Request, res: Response) => {
         return res.status(200).json(BetStatuses["0300"]);
     } catch (error) {
         console.log('@checkNumberAvailability error', error)
-        res.status(500).json(error);
+        res.status(500).json(statuses["0900"]);
     }
 }
 

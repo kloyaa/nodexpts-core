@@ -111,7 +111,7 @@ const createBet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
     catch (error) {
         console.log('@createBet error', error);
-        res.status(500).json(error);
+        res.status(500).json(api_statuses_const_1.statuses["0900"]);
     }
 });
 exports.createBet = createBet;
@@ -246,7 +246,7 @@ const deleteBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
     catch (error) {
         console.log("@deleteBetResult error", error);
-        return res.status(500).json(api_statuses_const_1.statuses["0900"]);
+        res.status(500).json(api_statuses_const_1.statuses["0900"]);
     }
 });
 exports.deleteBetResult = deleteBetResult;
@@ -298,7 +298,7 @@ const getNumberFormulated = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
     catch (error) {
         console.error('@numberStats', error);
-        res.status(500).json(error);
+        res.status(500).json(api_statuses_const_1.statuses["0900"]);
     }
 });
 exports.getNumberFormulated = getNumberFormulated;
@@ -397,7 +397,7 @@ const getAllBets = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
     catch (error) {
         console.log('@getAll error', error);
-        res.status(500).json(error);
+        res.status(500).json(api_statuses_const_1.statuses["0900"]);
     }
 });
 exports.getAllBets = getAllBets;
@@ -492,7 +492,7 @@ const getMyBets = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
     catch (error) {
         console.log('@getAll error', error);
-        res.status(500).json(error);
+        res.status(500).json(api_statuses_const_1.statuses["0900"]);
     }
 });
 exports.getMyBets = getMyBets;
@@ -547,7 +547,7 @@ const getDailyGross = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
     catch (error) {
         console.error('@getDailyTotal', error);
-        res.status(500).json(error);
+        res.status(500).json(api_statuses_const_1.statuses["0900"]);
     }
 });
 exports.getDailyGross = getDailyGross;
@@ -585,7 +585,7 @@ const checkNumberAvailability = (req, res) => __awaiter(void 0, void 0, void 0, 
     }
     catch (error) {
         console.log('@checkNumberAvailability error', error);
-        res.status(500).json(error);
+        res.status(500).json(api_statuses_const_1.statuses["0900"]);
     }
 });
 exports.checkNumberAvailability = checkNumberAvailability;

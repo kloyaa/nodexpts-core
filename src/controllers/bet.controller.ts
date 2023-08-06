@@ -423,10 +423,6 @@ export const getAllBets = async (req: Request & { user?: any }, res: Response) =
             
             const { time, type, schedule, user, page: currentPage, limit: currentLimit  } = req.query;
             
-            const page = parseInt(currentPage as string) || 1;
-            const limit = parseInt(currentLimit as string) || 10;
-            const skip = (page - 1) * limit;
-
             const pipeline = [];
             if (time || type || schedule || user) {
                 // Convert schedule to "YYYY-MM-DD" format for matching
@@ -499,6 +495,7 @@ export const getAllBets = async (req: Request & { user?: any }, res: Response) =
             );
             
             const result = await Bet.aggregate(pipeline);
+            console.log(result)
             if (result.length === 0) {
                 res.status(200).json([]);
                 return;

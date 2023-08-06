@@ -378,9 +378,6 @@ const getAllBets = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             return;
         }
         const { time, type, schedule, user, page: currentPage, limit: currentLimit } = req.query;
-        const page = parseInt(currentPage) || 1;
-        const limit = parseInt(currentLimit) || 10;
-        const skip = (page - 1) * limit;
         const pipeline = [];
         if (time || type || schedule || user) {
             // Convert schedule to "YYYY-MM-DD" format for matching
@@ -444,6 +441,7 @@ const getAllBets = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             },
         });
         const result = yield bet_model_1.Bet.aggregate(pipeline);
+        console.log(result);
         if (result.length === 0) {
             res.status(200).json([]);
             return;

@@ -14,6 +14,7 @@ const bet_route_1 = __importDefault(require("./routes/bet.route"));
 const employee_route_1 = __importDefault(require("./routes/employee.route"));
 const activity_route_1 = __importDefault(require("./routes/activity.route"));
 const config_route_1 = __importDefault(require("./routes/config.route"));
+const transaction_route_1 = __importDefault(require("./routes/transaction.route"));
 const is_maintenance_mode_middleware_1 = require("../__core/middlewares/is-maintenance-mode.middleware");
 const app = (0, express_1.default)();
 const envVars = {
@@ -43,6 +44,7 @@ app.use('/api', bet_route_1.default);
 app.use('/api', employee_route_1.default);
 app.use('/api', activity_route_1.default);
 app.use('/api', config_route_1.default);
+app.use('/api', transaction_route_1.default);
 app.get('/', (_, res) => {
     res.sendFile('index.html', { root: path_1.default.join(__dirname, 'public') });
 });

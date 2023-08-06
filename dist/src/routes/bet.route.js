@@ -6,6 +6,7 @@ const jwt_middleware_1 = require("../../__core/middlewares/jwt.middleware");
 const is_user_profile_created_middleware_1 = require("../../__core/middlewares/is-user-profile-created.middleware");
 const router = (0, express_1.Router)();
 router.post('/bet/v1/place', jwt_middleware_1.isAuthenticated, is_user_profile_created_middleware_1.isUserProfileCreated, bet_controller_1.createBet);
+router.post('/bet/v1/place-many', jwt_middleware_1.isAuthenticated, is_user_profile_created_middleware_1.isUserProfileCreated, bet_controller_1.createBulkBets);
 router.get('/bet/v1/bets', jwt_middleware_1.isAuthenticated, is_user_profile_created_middleware_1.isUserProfileCreated, bet_controller_1.getAllBets);
 router.get('/bet/v1/ref/:reference', jwt_middleware_1.isAuthenticated, is_user_profile_created_middleware_1.isUserProfileCreated, bet_controller_1.getByReference);
 router.get('/bet/v1/my-bets', jwt_middleware_1.isAuthenticated, is_user_profile_created_middleware_1.isUserProfileCreated, bet_controller_1.getMyBets);

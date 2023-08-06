@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getNumbersTotalAmount = exports.checkNumberAvailability = exports.getDailyGross = exports.getMyBetResultsWithWins = exports.getMyBets = exports.getAllBets = exports.getNumberFormulated = exports.deleteBetResult = exports.getBetResultsBySchedule = exports.getAllBetResults = exports.getByReference = exports.createBetResult = exports.createBet = void 0;
+exports.getNumbersTotalAmount = exports.checkNumberAvailability = exports.getDailyGross = exports.getMyBetResultsWithWins = exports.getMyBets = exports.getAllBets = exports.getNumberFormulated = exports.deleteBetResult = exports.getBetResultsBySchedule = exports.getAllBetResults = exports.getByReference = exports.createBetResult = exports.createBulkBets = exports.createBet = void 0;
 require('dotenv').config();
 const mongoose_1 = __importDefault(require("mongoose")); // Import the mongoose library
 const bet_model_1 = require("../models/bet.model");
@@ -115,6 +115,71 @@ const createBet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.createBet = createBet;
+const createBulkBets = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const bets = Array.isArray(req.body) ? req.body : [req.body];
+        const errors = [];
+        for (let i = 0; i < bets.length; i++) {
+            const error = new validation_util_1.RequestValidator().createBetAPI(bets[i]);
+            if (error) {
+                errors.push(`Bet at index ${i}: ${error.details[0].message.replace(/['"]/g, '')}`);
+            }
+        }
+        if (errors.length > 0) {
+            return res.status(400).json({ errors });
+        }
+        const reference = `SWSYA-${(0, generator_util_1.generateReference)().toUpperCase()}`;
+        const savedBets = [];
+        for (const bet of bets) {
+            const { type, schedule, time, amount, rambled, number } = bet;
+            if (rambled) {
+                if (!allowedInRamble(number.toString())) {
+                    return res.status(403).json(api_statuses_const_1.statuses["0315"]);
+                }
+                const numbers = breakRambleNumbers(number.toString());
+                const splittedValues = numbers.map((num) => ({
+                    amount: amount / 6,
+                    number: num,
+                    user: req.user.value,
+                    type,
+                    schedule,
+                    time,
+                    rambled,
+                    reference,
+                    code: number
+                }));
+                savedBets.push(...splittedValues);
+            }
+            else {
+                savedBets.push({
+                    user: req.user.value,
+                    type,
+                    schedule,
+                    time,
+                    amount,
+                    rambled,
+                    number,
+                    reference,
+                    code: number
+                });
+            }
+        }
+        yield Promise.all([
+            bet_model_1.Bet.insertMany(savedBets),
+            bet_model_1.NumberStats.insertMany(savedBets)
+        ]);
+        activity_event_1.emitter.emit(activity_enum_1.BetEventName.PLACE_BET, {
+            user: req.user.value,
+            description: activity_enum_1.BetActivityType.PLACE_BET,
+        });
+        return res.status(201).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0300"]), { data: { reference } }));
+    }
+    catch (error) {
+        console.log('@createBet error', error);
+        return res.status(500).json(api_statuses_const_1.statuses["0900"]);
+    }
+});
+exports.createBulkBets = createBulkBets;
 const createBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const error = new validation_util_1.RequestValidator().createBetResultAPI(req.body);
     if (error) {

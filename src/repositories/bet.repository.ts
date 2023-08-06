@@ -6,7 +6,7 @@ import { BetResult } from "../models/bet-result.model";
 interface IGetMyBetsRepository {
     time?: string; 
     type?: string; 
-    schedule?: string; 
+    schedule?: any; 
     user: any;
 }
 
@@ -112,6 +112,7 @@ export const getBetResultRepository = async (schedule?: string | undefined) => {
         ? new Date(schedule as unknown as Date).toISOString().substring(0, 10)
         : new Date().toISOString().substring(0, 10);
 
+        console.log(formattedSchedule)
     const aggregationPipeline: any[] = [
         {
             $match: {

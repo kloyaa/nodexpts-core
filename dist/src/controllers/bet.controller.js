@@ -23,6 +23,7 @@ const activity_enum_1 = require("../enum/activity.enum");
 const bet_result_model_1 = require("../models/bet-result.model");
 const generator_util_1 = require("../../__core/utils/generator.util");
 const bet_repository_1 = require("../repositories/bet.repository");
+const date_util_1 = require("../../__core/utils/date.util");
 const validTimeForSTL = ["10:30 AM", "3:00 PM", "8:00 PM"];
 const validTimeFor3D = ["2:00 PM", "5:00 PM", "9:00 PM"];
 const createBet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -560,8 +561,9 @@ const getMyBets = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.getMyBets = getMyBets;
 const getMyBetResultsWithWins = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const myBets = yield (0, bet_repository_1.getMyBetsRepository)({ user: req.user.value });
-    const todaysResult = yield (0, bet_repository_1.getBetResultRepository)();
+    const dateToday = (0, date_util_1.gtISODate)();
+    const myBets = yield (0, bet_repository_1.getMyBetsRepository)({ user: req.user.value, schedule: dateToday });
+    const todaysResult = yield (0, bet_repository_1.getBetResultRepository)(dateToday);
     return res.status(200).json(winCount(todaysResult, myBets));
 });
 exports.getMyBetResultsWithWins = getMyBetResultsWithWins;

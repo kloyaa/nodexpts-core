@@ -11,6 +11,7 @@ import { BetActivityType, BetEventName } from '../enum/activity.enum';
 import { BetResult } from '../models/bet-result.model';
 import { generateReference } from '../../__core/utils/generator.util';
 import { getBetResultRepository, getMyBetsRepository } from '../repositories/bet.repository';
+import { gtISODate } from '../../__core/utils/date.util';
 
 const validTimeForSTL = ["10:30 AM", "3:00 PM", "8:00 PM"];
 const validTimeFor3D = ["2:00 PM", "5:00 PM", "9:00 PM"];
@@ -626,8 +627,9 @@ export const getMyBets = async (req: Request & { user?: any }, res: Response) =>
 }
 
 export const getMyBetResultsWithWins = async (req: Request & { user?: any }, res: Response) => {
-    const myBets = await getMyBetsRepository({ user: req.user.value });
-    const todaysResult = await getBetResultRepository();
+    const dateToday = gtISODate();
+    const myBets = await getMyBetsRepository({ user: req.user.value, schedule: dateToday });
+    const todaysResult = await getBetResultRepository(dateToday);
 
     return res.status(200).json(winCount(todaysResult, myBets));
 }

@@ -104,6 +104,7 @@ const getBetResultRepository = (schedule) => __awaiter(void 0, void 0, void 0, f
     const formattedSchedule = schedule
         ? new Date(schedule).toISOString().substring(0, 10)
         : new Date().toISOString().substring(0, 10);
+    console.log(formattedSchedule);
     const aggregationPipeline = [
         {
             $match: {

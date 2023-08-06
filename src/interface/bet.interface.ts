@@ -12,6 +12,15 @@ export interface IBet  {
     time: "10:30 AM" | "3:00 PM" | "8:00 PM" | "2:00 PM" | "5:00 PM" | "9:00 PM";
 }
 
+export interface IBetContent {
+    type: string;
+    schedule: string;
+    time: string;
+    amount: number;
+    rambled: boolean;
+    number: string;
+}
+
 export interface IBetConfig {
     rambleLimit: number;
     normalNumLimit: number;
@@ -35,3 +44,13 @@ export interface IBetResult {
 }
 
 export type TNumbeClassification = "double" | "triple" | "normal" | "ramble"
+
+
+export interface ITransaction  {
+    user: Types.ObjectId;
+    content: any;
+    schedule: Date;
+    total: Number;
+    reference: string;
+    time: "10:30 AM" | "3:00 PM" | "8:00 PM" | "2:00 PM" | "5:00 PM" | "9:00 PM";
+}

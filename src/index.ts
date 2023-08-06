@@ -10,6 +10,7 @@ import betRoute from './routes/bet.route';
 import employeeRoute from './routes/employee.route';
 import acitvityRoute from './routes/activity.route';
 import configRoute from './routes/config.route';
+import transactionRoute from './routes/transaction.route';
 
 import { maintenanceModeMiddleware } from '../__core/middlewares/is-maintenance-mode.middleware';
 
@@ -44,6 +45,8 @@ app.use('/api', betRoute);
 app.use('/api', employeeRoute);
 app.use('/api', acitvityRoute);
 app.use('/api', configRoute);
+app.use('/api', transactionRoute);
+
 app.get('/', (_, res) => {
     res.sendFile('index.html', { root: path.join(__dirname, 'public') });
 });

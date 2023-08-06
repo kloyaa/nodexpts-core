@@ -1,7 +1,18 @@
 import Joi from "joi";
-import mongoose from 'mongoose';
 
 export class RequestValidator { 
+    createTransactionAPI(body: any) {
+        const { error } = Joi.object({
+            content: Joi.array().required(),
+            schedule: Joi.string().required(),
+            total: Joi.number().required(),
+            reference: Joi.string().required(),
+            time: Joi.string().valid("10:30 AM", "3:00 PM", "8:00 PM", "2:00 PM", "5:00 PM", "9:00 PM").required(),
+        }).validate(body);
+
+        return error;
+    }
+
     registerAPI(body: any) {
         const { error } = Joi.object({
             username: Joi.string().required(),

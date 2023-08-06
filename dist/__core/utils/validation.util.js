@@ -6,6 +6,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.RequestValidator = void 0;
 const joi_1 = __importDefault(require("joi"));
 class RequestValidator {
+    createTransactionAPI(body) {
+        const { error } = joi_1.default.object({
+            content: joi_1.default.array().required(),
+            schedule: joi_1.default.string().required(),
+            total: joi_1.default.number().required(),
+            reference: joi_1.default.string().required(),
+            time: joi_1.default.string().valid("10:30 AM", "3:00 PM", "8:00 PM", "2:00 PM", "5:00 PM", "9:00 PM").required(),
+        }).validate(body);
+        return error;
+    }
     registerAPI(body) {
         const { error } = joi_1.default.object({
             username: joi_1.default.string().required(),

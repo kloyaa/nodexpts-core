@@ -97,4 +97,12 @@ export const statuses = {
         message: "Our server is currently undergoing maintenance to improve your experience. Please try again later.",
         code: "500",
     },
+    "10010": {
+        message: "Aws S3 JWT_SECRET is incorrect/invalid",
+        code: "10010",
+    },
+    "10020": {
+        message: "Authentication failed. Please login and try again.",
+        code: "10020",
+    }
 };

@@ -1,6 +1,6 @@
 import { Types, Document } from "mongoose";
 
-export interface IBet extends Document {
+export interface IBet  {
     user: Types.ObjectId;
     type: "3D" | "STL";
     schedule: Date;

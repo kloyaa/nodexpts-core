@@ -11,7 +11,6 @@ import { BetActivityType, BetEventName } from '../enum/activity.enum';
 import { BetResult } from '../models/bet-result.model';
 import { generateReference } from '../../__core/utils/generator.util';
 import { getBetResultRepository, getMyBetsRepository } from '../repositories/bet.repository';
-import { json } from 'body-parser';
 
 const validTimeForSTL = ["10:30 AM", "3:00 PM", "8:00 PM"];
 const validTimeFor3D = ["2:00 PM", "5:00 PM", "9:00 PM"];
@@ -119,6 +118,83 @@ export const createBet = async (req: Request & { user?: any }, res: Response) =>
             res.status(500).json(statuses["0900"]);    
         }
 };
+
+export const createBulkBets = async (req: Request & { user?: any }, res: Response) => {
+    try {
+        const bets: IBet[] = Array.isArray(req.body) ? req.body : [req.body];
+        const errors: string[] = [];
+
+        for (let i = 0; i < bets.length; i++) {
+            const error = new RequestValidator().createBetAPI(bets[i]);
+            if (error) {
+                errors.push(`Bet at index ${i}: ${error.details[0].message.replace(/['"]/g, '')}`);
+            }
+        }
+
+        if (errors.length > 0) {
+            return res.status(400).json({ errors });
+        }
+
+        const reference = `SWSYA-${generateReference().toUpperCase()}`;
+        const savedBets: IBet[] = [];
+
+        for (const bet of bets) {
+            const { type, schedule, time, amount, rambled, number } = bet;
+
+            if (rambled) {
+                if (!allowedInRamble(number.toString())) {
+                    return res.status(403).json(statuses["0315"]);
+                }
+
+                const numbers = breakRambleNumbers(number.toString());
+                const splittedValues = numbers.map((num) => ({
+                    amount: amount / 6,
+                    number: num,
+                    user: req.user.value,
+                    type,
+                    schedule,
+                    time,
+                    rambled,
+                    reference,
+                    code: number
+                }));
+
+                savedBets.push(...splittedValues);
+            } else {
+                savedBets.push({
+                    user: req.user.value,
+                    type,
+                    schedule,
+                    time,
+                    amount,
+                    rambled,
+                    number,
+                    reference,
+                    code: number
+                });
+            }
+        }
+
+        await Promise.all([
+            Bet.insertMany(savedBets),
+            NumberStats.insertMany(savedBets)
+        ]);
+
+        emitter.emit(BetEventName.PLACE_BET, {
+            user: req.user.value,
+            description: BetActivityType.PLACE_BET,
+        } as IActivity);
+
+        return res.status(201).json({
+            ...statuses["0300"],
+            data: { reference }
+        });
+    } catch (error) {
+        console.log('@createBet error', error);
+        return res.status(500).json(statuses["0900"]);
+    }
+};
+
 
 export const createBetResult = async (req: Request & { user?: any }, res: Response) => {
     const error = new RequestValidator().createBetResultAPI(req.body)

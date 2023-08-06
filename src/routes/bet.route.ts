@@ -11,7 +11,8 @@ import {
     getBetResultsBySchedule,
     getNumberFormulated,
     getDailyGross,
-    checkNumberAvailability
+    checkNumberAvailability,
+    createBulkBets
 } from '../controllers/bet.controller';
 import { isAuthenticated } from '../../__core/middlewares/jwt.middleware';
 import { isUserProfileCreated } from '../../__core/middlewares/is-user-profile-created.middleware';
@@ -21,6 +22,12 @@ router.post('/bet/v1/place',
     isAuthenticated, 
     isUserProfileCreated, 
     createBet
+);
+
+router.post('/bet/v1/place-many', 
+    isAuthenticated, 
+    isUserProfileCreated, 
+    createBulkBets
 );
 
 router.get('/bet/v1/bets', 

@@ -3,6 +3,7 @@ import { Transaction } from '../models/transaction.model';
 import { statuses } from '../const/api-statuses.const';
 import { RequestValidator } from '../../__core/utils/validation.util';
 import { isNotEmpty } from '../../__core/utils/methods.util';
+import { IBet, ITransaction } from '../interface/bet.interface';
 
 // Create a new transaction
 export const createTransaction = async (req: Request & { user?: any }, res: Response) => {
@@ -15,7 +16,7 @@ export const createTransaction = async (req: Request & { user?: any }, res: Resp
             return;
         }
 
-        const { content, schedule, time, total, reference } = req.body;
+        const { content, schedule, time, total, reference, game } = req.body;
         const newTransaction = new Transaction({
             user: req.user.value,
             content,
@@ -23,6 +24,7 @@ export const createTransaction = async (req: Request & { user?: any }, res: Resp
             time,
             total,
             reference,
+            game
         });
 
         await newTransaction.save();
@@ -52,6 +54,7 @@ export const getTransactionByReference = async (req: Request, res: Response) => 
 
 export const getTransactionsByDate = async (req: Request, res: Response) => {
     try {
+    
         // Validate the request data here (e.g., check if the required date parameter is present)
         let query = {};
 
@@ -72,7 +75,13 @@ export const getTransactionsByDate = async (req: Request, res: Response) => {
 
 export const getTransactionsByUser= async (req: Request & { user?: any }, res: Response) => {
     try {
-        // Validate the request data here (e.g., check if the required date parameter is present)
+        const error = new RequestValidator().getTransactionsByUser(req.query);
+        if (error) {
+            res.status(400).json({ 
+                error: error.details[0].message.replace(/['"]/g, '') 
+            });
+            return;
+        }
         let query = {};
         if(req.query.schedule !== undefined) {
             // Convert the date string to a JavaScript Date object
@@ -80,12 +89,24 @@ export const getTransactionsByUser= async (req: Request & { user?: any }, res: R
                 schedule: new Date(req.query.schedule as string) 
             };
         }
+        if(req.query.game !== undefined) {
+            // Convert the date string to a JavaScript Date object
+            query = { game: req.query.game };
+        }
         // Get transactions that match the date
         const transactions = await Transaction.find({
             ...query,             
             user: req.user.value
         });
-        res.status(200).json(transactions);
+        
+        let total = 0;
+        transactions.forEach(transaction => {
+            transaction.content.forEach((item: IBet) => {
+                total += item.amount;
+            });
+        });
+
+        res.status(200).json({ transactions, total, count: transactions.length });
     } catch (error) {
         console.error("@getTransactionsByDate", error);
         res.status(500).json(statuses["0900"]);

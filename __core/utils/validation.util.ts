@@ -7,6 +7,7 @@ export class RequestValidator {
             schedule: Joi.string().required(),
             total: Joi.number().required(),
             reference: Joi.string().required(),
+            game: Joi.string().valid("3D", "STL").required(),
             time: Joi.string().valid("10:30 AM", "3:00 PM", "8:00 PM", "2:00 PM", "5:00 PM", "9:00 PM").required(),
         }).validate(body);
 
@@ -73,6 +74,15 @@ export class RequestValidator {
             gender: Joi.string().required(),
             refferedBy: Joi.string().optional()
         }).validate(body);
+
+        return error;
+    }
+
+    getTransactionsByUser(query: any) {
+        const { error } = Joi.object({
+            schedule: Joi.string().optional(),
+            game: Joi.string().valid("3D", "STL").optional(),
+        }).validate(query);
 
         return error;
     }

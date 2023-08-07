@@ -80,7 +80,7 @@ const getTransactionsByDate = (req, res) => __awaiter(void 0, void 0, void 0, fu
 exports.getTransactionsByDate = getTransactionsByDate;
 const getTransactions = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const error = new validation_util_1.RequestValidator().getTransactionsAPI(req.query); // Use req.query instead of req.body
+        const error = new validation_util_1.RequestValidator().getTransactionsAPI(req.query);
         if (error) {
             res.status(400).json({
                 error: error.details[0].message.replace(/['"]/g, '')
@@ -96,10 +96,44 @@ const getTransactions = (req, res) => __awaiter(void 0, void 0, void 0, function
             filter.time = req.query.time;
         }
         if (req.query.schedule) {
-            filter.schedule = req.query.schedule;
+            filter.schedule = new Date(req.query.schedule);
         }
-        // Get transactions that match the filter
-        const transactions = yield transaction_model_1.Transaction.find(filter);
+        // Construct the aggregation pipeline
+        const pipeline = [
+            {
+                $match: filter
+            },
+            {
+                $lookup: {
+                    from: 'profiles',
+                    localField: 'user',
+                    foreignField: 'user',
+                    as: 'profile'
+                }
+            },
+            // Unwind the 'profile' array to get a single object (since there's one-to-one relation)
+            { $unwind: '$profile' },
+            {
+                $project: {
+                    _id: 1,
+                    user: 1,
+                    content: 1,
+                    schedule: 1,
+                    time: 1,
+                    reference: 1,
+                    game: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    profile: 1
+                }
+            },
+            {
+                $sort: { createdAt: 1 }
+            }
+            // Add more stages as needed
+        ];
+        // Get transactions using the aggregation pipeline
+        const transactions = yield transaction_model_1.Transaction.aggregate(pipeline);
         res.status(200).json(transactions);
     }
     catch (error) {

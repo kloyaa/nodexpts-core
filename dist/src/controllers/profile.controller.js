@@ -182,8 +182,9 @@ const getAllProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function*
                     },
                     createdAt: 1,
                     updatedAt: 1,
-                }
-            }
+                },
+            },
+            { $sort: { createdAt: -1 } }
         ];
         // Execute the aggregation pipeline
         const result = yield user_model_1.User.aggregate(pipeline);

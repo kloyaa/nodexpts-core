@@ -73,6 +73,37 @@ export const getTransactionsByDate = async (req: Request, res: Response) => {
     }
 };
 
+export const getTransactions = async (req: Request, res: Response) => {
+    try {
+        const error = new RequestValidator().getTransactionsAPI(req.query); // Use req.query instead of req.body
+        if (error) {
+            res.status(400).json({ 
+                error: error.details[0].message.replace(/['"]/g, '') 
+            });
+            return;
+        }
+
+        // Build the filter object based on the optional query parameters
+        const filter: any = {};
+        if (req.query.game) {
+            filter.game = req.query.game;
+        }
+        if (req.query.time) {
+            filter.time = req.query.time;
+        }
+        if (req.query.schedule) {
+            filter.schedule = req.query.schedule;
+        }
+
+        // Get transactions that match the filter
+        const transactions = await Transaction.find(filter);
+        res.status(200).json(transactions);
+    } catch (error) {
+        console.error("@getTransactions", error);
+        res.status(500).json(statuses["0900"]);
+    }
+};
+
 export const getTransactionsByUser= async (req: Request & { user?: any }, res: Response) => {
     try {
         const error = new RequestValidator().getTransactionsByUser(req.query);

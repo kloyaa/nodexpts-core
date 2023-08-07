@@ -89,13 +89,11 @@ export const getTransactionsByUser= async (req: Request & { user?: any }, res: R
                 schedule: new Date(req.query.schedule as string) 
             };
         }
-        if(req.query.game !== undefined) {
-            // Convert the date string to a JavaScript Date object
-            query = { game: req.query.game };
-        }
+        
         // Get transactions that match the date
         const transactions = await Transaction.find({
-            ...query,             
+            ...query,  
+            game: req.query.game,            
             user: req.user.value
         });
         

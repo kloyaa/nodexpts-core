@@ -27,6 +27,11 @@ const transaction = new Schema<ITransaction>({
     reference: {
         type: String,
         required: true
+    },
+    game: {
+        type: String,
+        required: true,
+        enum: ["3D", "STL"]
     }
 }, { timestamps: true });
 

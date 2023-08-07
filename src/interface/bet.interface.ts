@@ -48,6 +48,7 @@ export type TNumbeClassification = "double" | "triple" | "normal" | "ramble"
 
 export interface ITransaction  {
     user: Types.ObjectId;
+    game: "3D" | "STL";
     content: any;
     schedule: Date;
     total: Number;

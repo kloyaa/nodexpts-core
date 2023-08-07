@@ -28,6 +28,11 @@ const transaction = new mongoose_1.Schema({
     reference: {
         type: String,
         required: true
+    },
+    game: {
+        type: String,
+        required: true,
+        enum: ["3D", "STL"]
     }
 }, { timestamps: true });
 exports.Transaction = (0, mongoose_1.model)('Transaction', transaction);

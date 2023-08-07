@@ -123,30 +123,12 @@ export const createBet = async (req: Request & { user?: any }, res: Response) =>
 export const createBulkBets = async (req: Request & { user?: any }, res: Response) => {
     try {
         const bets: IBet[] = Array.isArray(req.body) ? req.body : [req.body];
-        const errors: string[] = [];
-
-        for (let i = 0; i < bets.length; i++) {
-            const error = new RequestValidator().createBetAPI(bets[i]);
-            if (error) {
-                errors.push(`Bet at index ${i}: ${error.details[0].message.replace(/['"]/g, '')}`);
-            }
-        }
-
-        if (errors.length > 0) {
-            return res.status(400).json({ errors });
-        }
-
         const reference = `SWSYA-${generateReference().toUpperCase()}`;
         const savedBets: IBet[] = [];
 
         for (const bet of bets) {
             const { type, schedule, time, amount, rambled, number } = bet;
-
             if (rambled) {
-                if (!allowedInRamble(number.toString())) {
-                    return res.status(403).json(statuses["0315"]);
-                }
-
                 const numbers = breakRambleNumbers(number.toString());
                 const splittedValues = numbers.map((num) => ({
                     amount: amount / 6,
@@ -792,10 +774,8 @@ const isSoldOutNumber = async (number: string, schedule: Date, time: string, ram
     }
 };
 
-const allowedInRamble = (input: string) => {
-    const numStr = input.toString();
-    const digitSet = new Set(numStr);
-    return digitSet.size === numStr.length;
+const allowedInRamble = (combination: string) => {
+    return !(combination[0] ===  combination[1]  &&  combination[1]  ===  combination[2]);
 };
 
 const breakRambleNumbers = (input: string): string[] => {

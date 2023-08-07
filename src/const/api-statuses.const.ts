@@ -28,7 +28,7 @@ export const statuses = {
         code: "0314",
     },
     "0315": {
-        message: "Ramble numbers should contains 3 unique numbers.",
+        message: "Combination is not permitted in rambles. Please choose a different option.",
         code: "0315",
     },
     "0316": {

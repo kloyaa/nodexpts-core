@@ -4,6 +4,7 @@ import { statuses } from '../const/api-statuses.const';
 import { RequestValidator } from '../../__core/utils/validation.util';
 import { isNotEmpty } from '../../__core/utils/methods.util';
 import { IBet, ITransaction } from '../interface/bet.interface';
+import { PipelineStage } from 'mongoose';
 
 // Create a new transaction
 export const createTransaction = async (req: Request & { user?: any }, res: Response) => {
@@ -75,7 +76,7 @@ export const getTransactionsByDate = async (req: Request, res: Response) => {
 
 export const getTransactions = async (req: Request, res: Response) => {
     try {
-        const error = new RequestValidator().getTransactionsAPI(req.query); // Use req.query instead of req.body
+        const error = new RequestValidator().getTransactionsAPI(req.query);
         if (error) {
             res.status(400).json({ 
                 error: error.details[0].message.replace(/['"]/g, '') 
@@ -92,11 +93,47 @@ export const getTransactions = async (req: Request, res: Response) => {
             filter.time = req.query.time;
         }
         if (req.query.schedule) {
-            filter.schedule = req.query.schedule;
+            filter.schedule = new Date(req.query.schedule as string);
         }
 
-        // Get transactions that match the filter
-        const transactions = await Transaction.find(filter);
+        // Construct the aggregation pipeline
+        const pipeline: PipelineStage[] = [
+            {
+                $match: filter
+            },
+            {
+                $lookup: {
+                    from: 'profiles',
+                    localField: 'user',
+                    foreignField: 'user',
+                    as: 'profile'
+                }
+            },
+            // Unwind the 'profile' array to get a single object (since there's one-to-one relation)
+            { $unwind: '$profile' },
+            {
+                $project: {
+                    _id: 1,
+                    user: 1,
+                    content: 1,
+                    schedule: 1,
+                    time: 1,
+                    reference: 1,
+                    game: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    profile: 1
+                }
+            },
+            { 
+                $sort: { createdAt: 1 }
+            }
+            // Add more stages as needed
+        ];
+
+        // Get transactions using the aggregation pipeline
+        const transactions = await Transaction.aggregate(pipeline);
+
         res.status(200).json(transactions);
     } catch (error) {
         console.error("@getTransactions", error);

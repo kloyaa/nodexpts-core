@@ -55,6 +55,9 @@ const getAllActivityLogs = (req, res) => __awaiter(void 0, void 0, void 0, funct
                     updatedAt: 1,
                 },
             },
+            {
+                $sort: { createdAt: 1 }
+            }
         ];
         // Execute the aggregation pipeline
         const result = yield activity_model_1.Activity.aggregate(pipeline).sort({ createdAt: -1 });

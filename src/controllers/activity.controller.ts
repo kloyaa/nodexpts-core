@@ -1,10 +1,11 @@
 import { Request, Response } from "express";
 import { statuses } from "../../__core/const/api-statuses.const";
 import { Activity } from "../../__core/models/activity.model";
+import { PipelineStage } from "mongoose";
 
 export const getAllActivityLogs = async (req: Request & { from: string }, res: Response) => {
     try {
-        const pipeline = [
+        const pipeline: PipelineStage[] = [
             {
                 $lookup: {
                     from: 'profiles',
@@ -46,6 +47,10 @@ export const getAllActivityLogs = async (req: Request & { from: string }, res: R
                     updatedAt: 1, 
                 },
             },
+            {
+                $sort: { createdAt: 1 }
+            }
+            
         ];
 
         // Execute the aggregation pipeline

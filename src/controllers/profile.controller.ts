@@ -7,6 +7,7 @@ import { RequestValidator } from "../../__core/utils/validation.util";
 import { emitter } from "../../__core/events/activity.event";
 import { ActivityType, EventName } from "../../__core/enum/activity.enum";
 import { ObjectId } from "mongodb";
+import { PipelineStage } from "mongoose";
 
 export const create = async (req: Request & { user?: any }, res: Response): Promise<any> => {
     try {
@@ -128,7 +129,7 @@ export const getAllProfiles = async (req: Request, res: Response): Promise<any> 
     try {
         const { verified } = req.query;
 
-        const pipeline = [
+        const pipeline: PipelineStage[] = [
             // Lookup the Profile collection to get the profile associated with the user
             {
                 $lookup: {
@@ -179,8 +180,9 @@ export const getAllProfiles = async (req: Request, res: Response): Promise<any> 
                     },
                     createdAt: 1,
                     updatedAt: 1, 
-                }
-            }
+                },
+            },
+            { $sort: { createdAt: -1 } }
         ];
 
         // Execute the aggregation pipeline

@@ -24,6 +24,16 @@ export class RequestValidator {
         return error;
     }
 
+    getTransactionsAPI(body: any) {
+        const { error } = Joi.object({
+            game: Joi.string().valid("3D", "STL").optional(),
+            time: Joi.string().valid("10:30 AM", "3:00 PM", "8:00 PM", "2:00 PM", "5:00 PM", "9:00 PM").optional(),
+            schedule: Joi.string().optional(),
+        }).validate(body);
+
+        return error;
+    }
+
     checkNumberAvailabilityAPI(query: any) {
         const { error } = Joi.object({
             schedule: Joi.string().required(),

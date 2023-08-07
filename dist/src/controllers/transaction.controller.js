@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTransactionsByUser = exports.getTransactionsByDate = exports.getTransactionByReference = exports.createTransaction = void 0;
+exports.getTransactionsByUser = exports.getTransactions = exports.getTransactionsByDate = exports.getTransactionByReference = exports.createTransaction = void 0;
 const transaction_model_1 = require("../models/transaction.model");
 const api_statuses_const_1 = require("../const/api-statuses.const");
 const validation_util_1 = require("../../__core/utils/validation.util");
@@ -78,6 +78,36 @@ const getTransactionsByDate = (req, res) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.getTransactionsByDate = getTransactionsByDate;
+const getTransactions = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const error = new validation_util_1.RequestValidator().getTransactionsAPI(req.query); // Use req.query instead of req.body
+        if (error) {
+            res.status(400).json({
+                error: error.details[0].message.replace(/['"]/g, '')
+            });
+            return;
+        }
+        // Build the filter object based on the optional query parameters
+        const filter = {};
+        if (req.query.game) {
+            filter.game = req.query.game;
+        }
+        if (req.query.time) {
+            filter.time = req.query.time;
+        }
+        if (req.query.schedule) {
+            filter.schedule = req.query.schedule;
+        }
+        // Get transactions that match the filter
+        const transactions = yield transaction_model_1.Transaction.find(filter);
+        res.status(200).json(transactions);
+    }
+    catch (error) {
+        console.error("@getTransactions", error);
+        res.status(500).json(api_statuses_const_1.statuses["0900"]);
+    }
+});
+exports.getTransactions = getTransactions;
 const getTransactionsByUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const error = new validation_util_1.RequestValidator().getTransactionsByUser(req.query);

@@ -25,6 +25,14 @@ class RequestValidator {
         }).validate(body);
         return error;
     }
+    getTransactionsAPI(body) {
+        const { error } = joi_1.default.object({
+            game: joi_1.default.string().valid("3D", "STL").optional(),
+            time: joi_1.default.string().valid("10:30 AM", "3:00 PM", "8:00 PM", "2:00 PM", "5:00 PM", "9:00 PM").optional(),
+            schedule: joi_1.default.string().optional(),
+        }).validate(body);
+        return error;
+    }
     checkNumberAvailabilityAPI(query) {
         const { error } = joi_1.default.object({
             schedule: joi_1.default.string().required(),

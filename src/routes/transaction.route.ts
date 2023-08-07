@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createTransaction, getTransactionByReference, getTransactionsByDate, getTransactionsByUser } from '../controllers/transaction.controller';
+import { createTransaction, getTransactionByReference, getTransactions, getTransactionsByUser } from '../controllers/transaction.controller';
 import { isAuthenticated } from '../../__core/middlewares/jwt.middleware';
 
 const router = Router();
@@ -16,7 +16,7 @@ router.get('/transaction/v1/ref/:reference',
 
 router.get('/transaction/v1/all', 
     isAuthenticated, 
-    getTransactionsByDate
+    getTransactions
 );
 
 router.get('/transaction/v1/me', 

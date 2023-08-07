@@ -57,7 +57,7 @@ export const create = async (req: Request & { user?: any }, res: Response): Prom
         res.status(201).json(statuses["0100"]);
     } catch (error) {
         console.log("@create error", error)
-        res.status(500).json(statuses["0900"]);
+        res.status(500).json({...statuses["0900"], error});
     }
 }
 
@@ -121,8 +121,7 @@ export const getProfileByLoginId = async (req: Request, res: Response): Promise<
         return res.status(200).json(result[0]);
     } catch (error) {
         console.log('@getProfileByUsername error', error)
-        res.status(500).json(error);
-    }
+        res.status(500).json({...statuses["0900"], error});    }
 };
 
 export const getAllProfiles = async (req: Request, res: Response): Promise<any> => {
@@ -194,7 +193,7 @@ export const getAllProfiles = async (req: Request, res: Response): Promise<any> 
         return res.status(200).json(result);
     } catch (error) {
         console.log('@getAllActiveProfiles error', error)
-        res.status(500).json(error);
+        res.status(500).json({...statuses["0900"], error});
     }
 }
 
@@ -257,6 +256,6 @@ export const me = async (req: Request & { user?: any }, res: Response): Promise<
         return res.status(200).json(result[0]);
     } catch (error) {
         console.log('@me error', error)
-        res.status(500).json(error);
+        res.status(500).json({...statuses["0900"], error});
     }
 }

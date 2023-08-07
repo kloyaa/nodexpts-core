@@ -61,7 +61,7 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
     catch (error) {
         console.log("@create error", error);
-        res.status(500).json(api_statuses_const_1.statuses["0900"]);
+        res.status(500).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0900"]), { error }));
     }
 });
 exports.create = create;
@@ -124,7 +124,7 @@ const getProfileByLoginId = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
     catch (error) {
         console.log('@getProfileByUsername error', error);
-        res.status(500).json(error);
+        res.status(500).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0900"]), { error }));
     }
 });
 exports.getProfileByLoginId = getProfileByLoginId;
@@ -195,7 +195,7 @@ const getAllProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
     catch (error) {
         console.log('@getAllActiveProfiles error', error);
-        res.status(500).json(error);
+        res.status(500).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0900"]), { error }));
     }
 });
 exports.getAllProfiles = getAllProfiles;
@@ -258,7 +258,7 @@ const me = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
     catch (error) {
         console.log('@me error', error);
-        res.status(500).json(error);
+        res.status(500).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0900"]), { error }));
     }
 });
 exports.me = me;

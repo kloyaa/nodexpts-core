@@ -23,7 +23,7 @@ const createTransaction = (req, res) => __awaiter(void 0, void 0, void 0, functi
             });
             return;
         }
-        const { content, schedule, time, total, reference } = req.body;
+        const { content, schedule, time, total, reference, game } = req.body;
         const newTransaction = new transaction_model_1.Transaction({
             user: req.user.value,
             content,
@@ -31,6 +31,7 @@ const createTransaction = (req, res) => __awaiter(void 0, void 0, void 0, functi
             time,
             total,
             reference,
+            game
         });
         yield newTransaction.save();
         res.status(201).json(api_statuses_const_1.statuses["0300"]);
@@ -79,7 +80,13 @@ const getTransactionsByDate = (req, res) => __awaiter(void 0, void 0, void 0, fu
 exports.getTransactionsByDate = getTransactionsByDate;
 const getTransactionsByUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // Validate the request data here (e.g., check if the required date parameter is present)
+        const error = new validation_util_1.RequestValidator().getTransactionsByUser(req.query);
+        if (error) {
+            res.status(400).json({
+                error: error.details[0].message.replace(/['"]/g, '')
+            });
+            return;
+        }
         let query = {};
         if (req.query.schedule !== undefined) {
             // Convert the date string to a JavaScript Date object
@@ -87,9 +94,19 @@ const getTransactionsByUser = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 schedule: new Date(req.query.schedule)
             };
         }
+        if (req.query.game !== undefined) {
+            // Convert the date string to a JavaScript Date object
+            query = { game: req.query.game };
+        }
         // Get transactions that match the date
         const transactions = yield transaction_model_1.Transaction.find(Object.assign(Object.assign({}, query), { user: req.user.value }));
-        res.status(200).json(transactions);
+        let total = 0;
+        transactions.forEach(transaction => {
+            transaction.content.forEach((item) => {
+                total += item.amount;
+            });
+        });
+        res.status(200).json({ transactions, total, count: transactions.length });
     }
     catch (error) {
         console.error("@getTransactionsByDate", error);

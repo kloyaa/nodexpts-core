@@ -12,6 +12,7 @@ class RequestValidator {
             schedule: joi_1.default.string().required(),
             total: joi_1.default.number().required(),
             reference: joi_1.default.string().required(),
+            game: joi_1.default.string().valid("3D", "STL").required(),
             time: joi_1.default.string().valid("10:30 AM", "3:00 PM", "8:00 PM", "2:00 PM", "5:00 PM", "9:00 PM").required(),
         }).validate(body);
         return error;
@@ -66,6 +67,13 @@ class RequestValidator {
             gender: joi_1.default.string().required(),
             refferedBy: joi_1.default.string().optional()
         }).validate(body);
+        return error;
+    }
+    getTransactionsByUser(query) {
+        const { error } = joi_1.default.object({
+            schedule: joi_1.default.string().optional(),
+            game: joi_1.default.string().valid("3D", "STL").optional(),
+        }).validate(query);
         return error;
     }
     getProfileByLoginIdAPI(query) {

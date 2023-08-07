@@ -72,7 +72,7 @@ class RequestValidator {
     getTransactionsByUser(query) {
         const { error } = joi_1.default.object({
             schedule: joi_1.default.string().optional(),
-            game: joi_1.default.string().valid("3D", "STL").optional(),
+            game: joi_1.default.string().valid("3D", "STL").required(),
         }).validate(query);
         return error;
     }

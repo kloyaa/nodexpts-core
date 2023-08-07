@@ -94,12 +94,8 @@ const getTransactionsByUser = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 schedule: new Date(req.query.schedule)
             };
         }
-        if (req.query.game !== undefined) {
-            // Convert the date string to a JavaScript Date object
-            query = { game: req.query.game };
-        }
         // Get transactions that match the date
-        const transactions = yield transaction_model_1.Transaction.find(Object.assign(Object.assign({}, query), { user: req.user.value }));
+        const transactions = yield transaction_model_1.Transaction.find(Object.assign(Object.assign({}, query), { game: req.query.game, user: req.user.value }));
         let total = 0;
         transactions.forEach(transaction => {
             transaction.content.forEach((item) => {

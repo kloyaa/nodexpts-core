@@ -5,7 +5,7 @@ const mongoose_1 = require("mongoose");
 const betSchema = new mongoose_1.Schema({
     rambleLimit: {
         type: Number,
-        required: true,
+        required: true
     },
     normalNumLimit: {
         type: Number,
@@ -18,7 +18,7 @@ const betSchema = new mongoose_1.Schema({
     tripleNum: {
         type: Number,
         required: true
-    },
+    }
 }, { timestamps: true });
 exports.Bet = (0, mongoose_1.model)('Bet', betSchema);
 //# sourceMappingURL=bet-config.model.js.map

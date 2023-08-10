@@ -11,7 +11,7 @@ const betSchema = new mongoose_1.Schema({
     type: {
         type: String,
         required: true,
-        enum: ["3D", "STL"]
+        enum: ['3D', 'STL']
     },
     number: {
         type: String,
@@ -28,7 +28,7 @@ const betSchema = new mongoose_1.Schema({
     time: {
         type: String,
         required: true,
-        enum: ["10:30 AM", "3:00 PM", "8:00 PM", "2:00 PM", "5:00 PM", "9:00 PM"]
+        enum: ['10:30 AM', '3:00 PM', '8:00 PM', '2:00 PM', '5:00 PM', '9:00 PM']
     },
     amount: {
         type: Number,
@@ -60,12 +60,12 @@ const numberSatsSchema = new mongoose_1.Schema({
     time: {
         type: String,
         required: true,
-        enum: ["10:30 AM", "3:00 PM", "8:00 PM", "2:00 PM", "5:00 PM", "9:00 PM"]
+        enum: ['10:30 AM', '3:00 PM', '8:00 PM', '2:00 PM', '5:00 PM', '9:00 PM']
     },
     amount: {
         type: Number,
         required: true
-    },
+    }
 }, { timestamps: true });
 exports.NumberStats = (0, mongoose_1.model)('NumberStats', numberSatsSchema);
 exports.Bet = (0, mongoose_1.model)('Bet', betSchema);

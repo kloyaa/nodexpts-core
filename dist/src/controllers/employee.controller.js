@@ -20,33 +20,30 @@ const roles_model_1 = require("../../__core/models/roles.model");
 const mongoose_1 = require("mongoose");
 const activity_event_1 = require("../../__core/events/activity.event");
 const activity_enum_1 = require("../../__core/enum/activity.enum");
-// Patch request to update the 'verified' field of a profile
 const updateProfileVerifiedStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // // Check if there are any validation errors
         const error = new validation_util_1.RequestValidator().updateProfileVerifiedStatusAPI(req.body);
         if (error) {
-            res.status(400).json({
-                error: error.details[0].message.replace(/['"]/g, '')
-            });
+            res.status(400).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses['501']), { error: error.details[0].message.replace(/['"]/g, '') }));
             return;
         }
         const { user, verified } = req.body; // Assuming the profile ID is provided in the request parameters
         if (!(0, mongoose_1.isValidObjectId)(user)) {
-            return res.status(400).json(api_statuses_const_1.statuses["0901"]);
+            return res.status(400).json(api_statuses_const_1.statuses['0901']);
         }
         // Find the profile by _id
         const profile = yield profile_model_1.Profile.findOne({ user });
         if (!profile) {
             // If profile is not found, return an error
-            res.status(404).json(api_statuses_const_1.statuses["0104"]);
+            res.status(404).json(api_statuses_const_1.statuses['0104']);
             return;
         }
         profile.verified = verified;
         yield profile.save();
         activity_event_1.emitter.emit(activity_enum_1.EventName.PROFILE_VERIFICATION, {
             user: req.user.value,
-            description: activity_enum_1.ActivityType.PROFILE_VERIFICATION,
+            description: activity_enum_1.ActivityType.PROFILE_VERIFICATION
         });
         res.status(200).json(profile);
     }
@@ -75,22 +72,19 @@ const getDailyTotal = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 exports.getDailyTotal = getDailyTotal;
 const createRoleForUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // Check if there are any validation errors
         const error = new validation_util_1.RequestValidator().createRoleForUser(req.body);
         if (error) {
-            res.status(400).json({
-                error: error.details[0].message.replace(/['"]/g, '')
-            });
+            res.status(400).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses['501']), { error: error.details[0].message.replace(/['"]/g, '') }));
             return;
         }
         const { user, name, description } = req.body;
         if (!(0, mongoose_1.isValidObjectId)(user)) {
-            return res.status(400).json(api_statuses_const_1.statuses["0901"]);
+            return res.status(400).json(api_statuses_const_1.statuses['0901']);
         }
         // Check if the user exists in the database
         const existingUser = yield user_model_1.User.findById(user).exec();
         if (!existingUser) {
-            return res.status(403).json(api_statuses_const_1.statuses["0056"]);
+            return res.status(403).json(api_statuses_const_1.statuses['0056']);
         }
         // Create the user role
         const userRole = new roles_model_1.UserRole({ user, name, description });
@@ -98,7 +92,7 @@ const createRoleForUser = (req, res) => __awaiter(void 0, void 0, void 0, functi
         yield userRole.save();
         activity_event_1.emitter.emit(activity_enum_1.EventName.ROLE_CREATION, {
             user: user._id,
-            description: activity_enum_1.ActivityType.ROLE_CREATION,
+            description: activity_enum_1.ActivityType.ROLE_CREATION
         });
         return res.status(201).json(userRole);
     }

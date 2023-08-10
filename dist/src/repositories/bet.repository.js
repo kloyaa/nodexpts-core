@@ -29,8 +29,8 @@ const getMyBetsRepository = (query) => __awaiter(void 0, void 0, void 0, functio
                 matchStage.$expr = {
                     $eq: [
                         { $dateToString: { format: '%Y-%m-%d', date: '$schedule', timezone: 'UTC' } },
-                        formattedSchedule,
-                    ],
+                        formattedSchedule
+                    ]
                 };
             }
             if (type) {
@@ -40,7 +40,7 @@ const getMyBetsRepository = (query) => __awaiter(void 0, void 0, void 0, functio
                 matchStage.time = time;
             }
             pipeline.push({
-                $match: Object.assign(Object.assign({}, matchStage), { user: new mongoose_1.default.Types.ObjectId(user) }),
+                $match: Object.assign(Object.assign({}, matchStage), { user: new mongoose_1.default.Types.ObjectId(user) })
             });
         }
         pipeline.push({
@@ -48,10 +48,10 @@ const getMyBetsRepository = (query) => __awaiter(void 0, void 0, void 0, functio
                 from: 'profiles',
                 localField: 'user',
                 foreignField: 'user',
-                as: 'profile',
-            },
+                as: 'profile'
+            }
         }, {
-            $unwind: '$profile',
+            $unwind: '$profile'
         }, {
             $project: {
                 type: 1,
@@ -60,8 +60,8 @@ const getMyBetsRepository = (query) => __awaiter(void 0, void 0, void 0, functio
                     $dateToString: {
                         date: '$schedule',
                         format: '%Y-%m-%d',
-                        timezone: 'UTC',
-                    },
+                        timezone: 'UTC'
+                    }
                 },
                 time: 1,
                 amount: 1,
@@ -74,9 +74,9 @@ const getMyBetsRepository = (query) => __awaiter(void 0, void 0, void 0, functio
                     address: 1,
                     contactNumber: 1,
                     gender: 1,
-                    verified: 1,
-                },
-            },
+                    verified: 1
+                }
+            }
         });
         const result = yield bet_model_1.Bet.aggregate(pipeline);
         if (result.length === 0) {
@@ -111,10 +111,10 @@ const getBetResultRepository = (schedule) => __awaiter(void 0, void 0, void 0, f
                 $expr: {
                     $eq: [
                         { $dateToString: { format: '%Y-%m-%d', date: '$schedule', timezone: 'UTC' } },
-                        formattedSchedule,
-                    ],
-                },
-            },
+                        formattedSchedule
+                    ]
+                }
+            }
         },
         {
             $project: {
@@ -122,9 +122,9 @@ const getBetResultRepository = (schedule) => __awaiter(void 0, void 0, void 0, f
                 schedule: 1,
                 number: 1,
                 time: 1,
-                type: 1,
-            },
-        },
+                type: 1
+            }
+        }
     ];
     const result = yield bet_result_model_1.BetResult.aggregate(aggregationPipeline);
     return result;

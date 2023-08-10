@@ -13,14 +13,13 @@ exports.getTransactionsByUser = exports.getTransactions = exports.getTransaction
 const transaction_model_1 = require("../models/transaction.model");
 const api_statuses_const_1 = require("../const/api-statuses.const");
 const validation_util_1 = require("../../__core/utils/validation.util");
+const api_statuses_const_2 = require("../../__core/const/api-statuses.const");
 // Create a new transaction
 const createTransaction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const error = new validation_util_1.RequestValidator().createTransactionAPI(req.body);
         if (error) {
-            res.status(400).json({
-                error: error.details[0].message.replace(/['"]/g, '')
-            });
+            res.status(400).json(Object.assign(Object.assign({}, api_statuses_const_2.statuses['501']), { error: error.details[0].message.replace(/['"]/g, '') }));
             return;
         }
         const { content, schedule, time, total, reference, game } = req.body;
@@ -34,11 +33,11 @@ const createTransaction = (req, res) => __awaiter(void 0, void 0, void 0, functi
             game
         });
         yield newTransaction.save();
-        res.status(201).json(api_statuses_const_1.statuses["0300"]);
+        res.status(201).json(api_statuses_const_1.statuses['0300']);
     }
     catch (error) {
-        console.error("@createTransaction", error);
-        res.status(500).json(api_statuses_const_1.statuses["0900"]);
+        console.error('@createTransaction', error);
+        res.status(500).json(api_statuses_const_1.statuses['0900']);
     }
 });
 exports.createTransaction = createTransaction;
@@ -48,19 +47,18 @@ const getTransactionByReference = (req, res) => __awaiter(void 0, void 0, void 0
         const reference = req.params.reference;
         const transaction = yield transaction_model_1.Transaction.findOne({ reference });
         if (!transaction) {
-            return res.status(404).json(api_statuses_const_1.statuses["0316"]);
+            return res.status(404).json(api_statuses_const_1.statuses['0316']);
         }
         res.status(201).json(transaction);
     }
     catch (error) {
-        console.error("@getTransactionByReference", error);
-        res.status(500).json(api_statuses_const_1.statuses["0900"]);
+        console.error('@getTransactionByReference', error);
+        res.status(500).json(api_statuses_const_1.statuses['0900']);
     }
 });
 exports.getTransactionByReference = getTransactionByReference;
 const getTransactionsByDate = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // Validate the request data here (e.g., check if the required date parameter is present)
         let query = {};
         if (req.query.schedule !== undefined) {
             // Convert the date string to a JavaScript Date object
@@ -70,11 +68,11 @@ const getTransactionsByDate = (req, res) => __awaiter(void 0, void 0, void 0, fu
         }
         // Get transactions that match the date
         const transactions = yield transaction_model_1.Transaction.find(query);
-        res.status(200).json(transactions);
+        return res.status(200).json(transactions);
     }
     catch (error) {
-        console.error("@getTransactionsByDate", error);
-        res.status(500).json(api_statuses_const_1.statuses["0900"]);
+        console.error('@getTransactionsByDate', error);
+        return res.status(500).json(api_statuses_const_1.statuses['0900']);
     }
 });
 exports.getTransactionsByDate = getTransactionsByDate;
@@ -82,12 +80,9 @@ const getTransactions = (req, res) => __awaiter(void 0, void 0, void 0, function
     try {
         const error = new validation_util_1.RequestValidator().getTransactionsAPI(req.query);
         if (error) {
-            res.status(400).json({
-                error: error.details[0].message.replace(/['"]/g, '')
-            });
+            res.status(400).json(Object.assign(Object.assign({}, api_statuses_const_2.statuses['501']), { error: error.details[0].message.replace(/['"]/g, '') }));
             return;
         }
-        // Build the filter object based on the optional query parameters
         const filter = {};
         if (req.query.game) {
             filter.game = req.query.game;
@@ -137,8 +132,8 @@ const getTransactions = (req, res) => __awaiter(void 0, void 0, void 0, function
         res.status(200).json(transactions);
     }
     catch (error) {
-        console.error("@getTransactions", error);
-        res.status(500).json(api_statuses_const_1.statuses["0900"]);
+        console.error('@getTransactions', error);
+        res.status(500).json(api_statuses_const_1.statuses['0900']);
     }
 });
 exports.getTransactions = getTransactions;
@@ -146,9 +141,7 @@ const getTransactionsByUser = (req, res) => __awaiter(void 0, void 0, void 0, fu
     try {
         const error = new validation_util_1.RequestValidator().getTransactionsByUser(req.query);
         if (error) {
-            res.status(400).json({
-                error: error.details[0].message.replace(/['"]/g, '')
-            });
+            res.status(400).json(Object.assign(Object.assign({}, api_statuses_const_2.statuses['501']), { error: error.details[0].message.replace(/['"]/g, '') }));
             return;
         }
         let query = {};
@@ -169,10 +162,9 @@ const getTransactionsByUser = (req, res) => __awaiter(void 0, void 0, void 0, fu
         res.status(200).json({ transactions, total, count: transactions.length });
     }
     catch (error) {
-        console.error("@getTransactionsByDate", error);
-        res.status(500).json(api_statuses_const_1.statuses["0900"]);
+        console.error('@getTransactionsByDate', error);
+        res.status(500).json(api_statuses_const_1.statuses['0900']);
     }
 });
 exports.getTransactionsByUser = getTransactionsByUser;
-// Add more controller functions for updating, deleting, and listing transactions as needed.
 //# sourceMappingURL=transaction.controller.js.map

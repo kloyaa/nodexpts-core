@@ -13,7 +13,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getNumbersTotalAmount = exports.checkNumberAvailability = exports.getDailyGross = exports.getMyBetResultsWithWins = exports.getMyBets = exports.getAllBets = exports.getNumberFormulated = exports.deleteBetResult = exports.getBetResultsBySchedule = exports.getAllBetResults = exports.getByReference = exports.createBetResult = exports.createBulkBets = exports.createBet = void 0;
-require('dotenv').config();
 const mongoose_1 = __importDefault(require("mongoose")); // Import the mongoose library
 const bet_model_1 = require("../models/bet.model");
 const validation_util_1 = require("../../__core/utils/validation.util");
@@ -24,37 +23,38 @@ const bet_result_model_1 = require("../models/bet-result.model");
 const generator_util_1 = require("../../__core/utils/generator.util");
 const bet_repository_1 = require("../repositories/bet.repository");
 const date_util_1 = require("../../__core/utils/date.util");
-const validTimeForSTL = ["10:30 AM", "3:00 PM", "8:00 PM"];
-const validTimeFor3D = ["2:00 PM", "5:00 PM", "9:00 PM"];
+const bet_util_1 = require("../utils/bet.util");
+const api_statuses_const_2 = require("../../__core/const/api-statuses.const");
+require('dotenv').config();
+const validTimeForSTL = ['10:30 AM', '3:00 PM', '8:00 PM'];
+const validTimeFor3D = ['2:00 PM', '5:00 PM', '9:00 PM'];
 const createBet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Check if there are any validation errors
         const error = new validation_util_1.RequestValidator().createBetAPI(req.body);
         if (error) {
-            res.status(400).json({
-                error: error.details[0].message.replace(/['"]/g, '')
-            });
+            res.status(400).json(Object.assign(Object.assign({}, api_statuses_const_2.statuses['501']), { error: error.details[0].message.replace(/['"]/g, '') }));
             return;
         }
         const { type, schedule, time, amount, rambled, number } = req.body;
         const isSoldOut = yield isSoldOutNumber(number, schedule, time, rambled);
         if (isSoldOut === null || isSoldOut === void 0 ? void 0 : isSoldOut.full) {
-            return res.status(403).json(api_statuses_const_1.statuses["0312"]);
+            return res.status(403).json(api_statuses_const_1.statuses['0312']);
         }
         if (((isSoldOut === null || isSoldOut === void 0 ? void 0 : isSoldOut.total) + amount) > (isSoldOut === null || isSoldOut === void 0 ? void 0 : isSoldOut.limit)) {
-            return res.status(403).json(api_statuses_const_1.statuses["0313"]);
+            return res.status(403).json(api_statuses_const_1.statuses['0313']);
         }
-        if (type === "STL" && !validTimeForSTL.includes(time)) {
-            return res.status(403).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0310"]), { data: `Time ${validTimeForSTL.join(", ")}` }));
+        if (type === 'STL' && !validTimeForSTL.includes(time)) {
+            return res.status(403).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses['0310']), { data: `Time ${validTimeForSTL.join(', ')}` }));
         }
-        if (type === "3D" && !validTimeFor3D.includes(time)) {
-            return res.status(403).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0310"]), { data: `Time ${validTimeFor3D.join(", ")}` }));
+        if (type === '3D' && !validTimeFor3D.includes(time)) {
+            return res.status(403).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses['0310']), { data: `Time ${validTimeFor3D.join(', ')}` }));
         }
         // Generate Reference
         const reference = `SWSYA-${(0, generator_util_1.generateReference)().toUpperCase().slice(0, 4)}-${(0, generator_util_1.generateReference)().toUpperCase().slice(4)}`;
         if (rambled) {
             if (!allowedInRamble(number)) {
-                return res.status(403).json(api_statuses_const_1.statuses["0315"]);
+                return res.status(403).json(api_statuses_const_1.statuses['0315']);
             }
             const numbers = breakRambleNumbers(number);
             const splittedValues = numbers.map((num) => ({
@@ -74,7 +74,7 @@ const createBet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             ]);
             activity_event_1.emitter.emit(activity_enum_1.BetEventName.PLACE_BET, {
                 user: req.user.value,
-                description: activity_enum_1.BetActivityType.PLACE_BET,
+                description: activity_enum_1.BetActivityType.PLACE_BET
             });
             return res.status(201).json(savedBet);
         }
@@ -95,7 +95,7 @@ const createBet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 amount,
                 time,
                 number,
-                user: req.user.value,
+                user: req.user.value
             });
             // Save the bet to the database
             const [savedBet, _] = yield Promise.all([
@@ -104,7 +104,7 @@ const createBet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             ]);
             activity_event_1.emitter.emit(activity_enum_1.BetEventName.BET_ACTIVITY, {
                 user: req.user.value,
-                description: activity_enum_1.BetActivityType.PLACE_BET,
+                description: activity_enum_1.BetActivityType.PLACE_BET
             });
             // Return the newly created bet as the response
             return res.status(201).json(savedBet);
@@ -112,7 +112,7 @@ const createBet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
     catch (error) {
         console.log('@createBet error', error);
-        res.status(500).json(api_statuses_const_1.statuses["0900"]);
+        res.status(500).json(api_statuses_const_2.statuses['0900']);
     }
 });
 exports.createBet = createBet;
@@ -124,7 +124,7 @@ const createBulkBets = (req, res) => __awaiter(void 0, void 0, void 0, function*
         for (const bet of bets) {
             const { type, schedule, time, amount, rambled, number } = bet;
             if (rambled) {
-                const numbers = breakRambleNumbers(number.toString());
+                const numbers = (0, bet_util_1.breakCombinations)(number.toString());
                 const splittedValues = numbers.map((num) => ({
                     amount: amount / 6,
                     number: num,
@@ -158,30 +158,28 @@ const createBulkBets = (req, res) => __awaiter(void 0, void 0, void 0, function*
         ]);
         activity_event_1.emitter.emit(activity_enum_1.BetEventName.PLACE_BET, {
             user: req.user.value,
-            description: activity_enum_1.BetActivityType.PLACE_BET,
+            description: activity_enum_1.BetActivityType.PLACE_BET
         });
-        return res.status(201).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0300"]), { data: { reference } }));
+        return res.status(201).json(Object.assign(Object.assign({}, api_statuses_const_2.statuses['0300']), { data: { reference } }));
     }
     catch (error) {
         console.log('@createBet error', error);
-        return res.status(500).json(api_statuses_const_1.statuses["0900"]);
+        return res.status(500).json(api_statuses_const_2.statuses['0900']);
     }
 });
 exports.createBulkBets = createBulkBets;
 const createBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const error = new validation_util_1.RequestValidator().createBetResultAPI(req.body);
     if (error) {
-        res.status(400).json({
-            error: error.details[0].message.replace(/['"]/g, '')
-        });
+        res.status(400).json(Object.assign(Object.assign({}, api_statuses_const_2.statuses['501']), { error: error.details[0].message.replace(/['"]/g, '') }));
         return;
     }
     const { number, schedule, time, type } = req.body;
-    if (type === "STL" && !validTimeForSTL.includes(time)) {
-        return res.status(403).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0310"]), { data: `Time ${validTimeForSTL.join(", ")}` }));
+    if (type === 'STL' && !validTimeForSTL.includes(time)) {
+        return res.status(403).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses['0310']), { data: `Time ${validTimeForSTL.join(', ')}` }));
     }
-    if (type === "3D" && !validTimeFor3D.includes(time)) {
-        return res.status(403).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0310"]), { data: `Time ${validTimeFor3D.join(", ")}` }));
+    if (type === '3D' && !validTimeFor3D.includes(time)) {
+        return res.status(403).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses['0310']), { data: `Time ${validTimeFor3D.join(', ')}` }));
     }
     const formattedSchedule = schedule
         ? new Date(schedule).toISOString().substring(0, 10)
@@ -192,11 +190,11 @@ const createBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function
                 $expr: {
                     $eq: [
                         { $dateToString: { format: '%Y-%m-%d', date: '$schedule', timezone: 'UTC' } },
-                        formattedSchedule,
-                    ],
+                        formattedSchedule
+                    ]
                 },
                 time
-            },
+            }
         },
         {
             $project: {
@@ -205,12 +203,12 @@ const createBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function
                 number: 1,
                 time: 1,
                 type: 1
-            },
-        },
+            }
+        }
     ];
     const result = yield bet_result_model_1.BetResult.aggregate(aggregationPipeline);
-    if (result.length) {
-        return res.status(403).json(api_statuses_const_1.statuses["0314"]);
+    if (result.length > 0) {
+        return res.status(403).json(api_statuses_const_1.statuses['0314']);
     }
     const newBetResult = new bet_result_model_1.BetResult({
         number,
@@ -221,9 +219,9 @@ const createBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function
     yield newBetResult.save();
     activity_event_1.emitter.emit(activity_enum_1.BetEventName.BET_ACTIVITY, {
         user: req.user.value,
-        description: activity_enum_1.BetActivityType.CREATE_BET_RESULT,
+        description: activity_enum_1.BetActivityType.CREATE_BET_RESULT
     });
-    return res.status(201).json(api_statuses_const_1.statuses["0300"]);
+    return res.status(201).json(api_statuses_const_2.statuses['0300']);
 });
 exports.createBetResult = createBetResult;
 const getByReference = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -231,22 +229,22 @@ const getByReference = (req, res) => __awaiter(void 0, void 0, void 0, function*
     const pipeline = [
         {
             $match: {
-                reference: reference,
-                user: new mongoose_1.default.Types.ObjectId(req.user.value),
+                reference,
+                user: new mongoose_1.default.Types.ObjectId(req.user.value)
             }
         },
         { $limit: 1 }
     ];
     const result = (yield bet_model_1.Bet.aggregate(pipeline).exec()).at(0);
     if (!result) {
-        return res.json(api_statuses_const_1.statuses["0316"]);
+        return res.json(api_statuses_const_1.statuses['0316']);
     }
-    const user = req.user.value.toString() + "2";
+    const user = req.user.value.toString() + '2';
     const owner = result.user.toString();
     if (result && user !== owner) {
-        return res.json(api_statuses_const_1.statuses["0317"]);
+        return res.json(api_statuses_const_1.statuses['0317']);
     }
-    return res.status(200).json(api_statuses_const_1.statuses["0300"]);
+    return res.status(200).json(api_statuses_const_2.statuses['0300']);
 });
 exports.getByReference = getByReference;
 const getAllBetResults = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -265,10 +263,10 @@ const getBetResultsBySchedule = (req, res) => __awaiter(void 0, void 0, void 0, 
                 $expr: {
                     $eq: [
                         { $dateToString: { format: '%Y-%m-%d', date: '$schedule', timezone: 'UTC' } },
-                        formattedSchedule,
-                    ],
+                        formattedSchedule
+                    ]
                 }
-            },
+            }
         },
         {
             $project: {
@@ -277,8 +275,8 @@ const getBetResultsBySchedule = (req, res) => __awaiter(void 0, void 0, void 0, 
                 number: 1,
                 time: 1,
                 type: 1
-            },
-        },
+            }
+        }
     ];
     const result = yield bet_result_model_1.BetResult.aggregate(aggregationPipeline);
     return res.status(200).json(result);
@@ -289,17 +287,17 @@ const deleteBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function
     try {
         const betResult = yield bet_result_model_1.BetResult.findByIdAndDelete(_id);
         if (!betResult) {
-            return res.status(404).json({ error: "Bet result not found" });
+            return res.status(404).json({ error: 'Bet result not found' });
         }
         activity_event_1.emitter.emit(activity_enum_1.BetEventName.BET_ACTIVITY, {
             user: req.user.value,
-            description: activity_enum_1.BetActivityType.DELETED_BET_RESULT,
+            description: activity_enum_1.BetActivityType.DELETED_BET_RESULT
         });
-        return res.json(api_statuses_const_1.statuses["0300"]);
+        return res.json(api_statuses_const_2.statuses['0300']);
     }
     catch (error) {
-        console.log("@deleteBetResult error", error);
-        res.status(500).json(api_statuses_const_1.statuses["0900"]);
+        console.log('@deleteBetResult error', error);
+        res.status(500).json(api_statuses_const_2.statuses['0900']);
     }
 });
 exports.deleteBetResult = deleteBetResult;
@@ -315,21 +313,21 @@ const getNumberFormulated = (req, res) => __awaiter(void 0, void 0, void 0, func
                     from: 'profiles',
                     localField: 'user',
                     foreignField: 'user',
-                    as: 'profile',
-                },
+                    as: 'profile'
+                }
             },
             {
-                $unwind: '$profile',
+                $unwind: '$profile'
             },
             {
                 $match: {
                     $expr: {
                         $eq: [
                             { $dateToString: { format: '%Y-%m-%d', date: '$schedule', timezone: 'UTC' } },
-                            formattedSchedule,
-                        ],
+                            formattedSchedule
+                        ]
                     }
-                },
+                }
             },
             {
                 $project: {
@@ -343,15 +341,15 @@ const getNumberFormulated = (req, res) => __awaiter(void 0, void 0, void 0, func
                         contactNumber: 1,
                         gender: 1
                     }
-                },
-            },
+                }
+            }
         ];
         const result = yield bet_model_1.NumberStats.aggregate(aggregationPipeline);
         return res.json(result);
     }
     catch (error) {
         console.error('@numberStats', error);
-        res.status(500).json(api_statuses_const_1.statuses["0900"]);
+        res.status(500).json(api_statuses_const_2.statuses['0900']);
     }
 });
 exports.getNumberFormulated = getNumberFormulated;
@@ -378,8 +376,8 @@ const getAllBets = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 matchStage.$expr = {
                     $eq: [
                         { $dateToString: { format: '%Y-%m-%d', date: '$schedule', timezone: 'UTC' } },
-                        formattedSchedule,
-                    ],
+                        formattedSchedule
+                    ]
                 };
             }
             if (type) {
@@ -398,10 +396,10 @@ const getAllBets = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 from: 'profiles',
                 localField: 'user',
                 foreignField: 'user',
-                as: 'profile',
-            },
+                as: 'profile'
+            }
         }, {
-            $unwind: '$profile',
+            $unwind: '$profile'
         }, {
             $project: {
                 type: 1,
@@ -411,8 +409,8 @@ const getAllBets = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                     $dateToString: {
                         date: '$schedule',
                         format: '%Y-%m-%d',
-                        timezone: 'UTC',
-                    },
+                        timezone: 'UTC'
+                    }
                 },
                 time: 1,
                 amount: 1,
@@ -424,9 +422,9 @@ const getAllBets = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                     address: 1,
                     contactNumber: 1,
                     gender: 1,
-                    verified: 1,
-                },
-            },
+                    verified: 1
+                }
+            }
         });
         const result = yield bet_model_1.Bet.aggregate(pipeline);
         console.log(result);
@@ -448,7 +446,7 @@ const getAllBets = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
     catch (error) {
         console.log('@getAll error', error);
-        res.status(500).json(api_statuses_const_1.statuses["0900"]);
+        res.status(500).json(api_statuses_const_2.statuses['0900']);
     }
 });
 exports.getAllBets = getAllBets;
@@ -457,9 +455,7 @@ const getMyBets = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         // Check if there are any validation errors
         const error = new validation_util_1.RequestValidator().getAllBetsAPI(req.query);
         if (error) {
-            res.status(400).json({
-                error: error.details[0].message.replace(/['"]/g, '')
-            });
+            res.status(400).json(Object.assign(Object.assign({}, api_statuses_const_2.statuses['501']), { error: error.details[0].message.replace(/['"]/g, '') }));
             return;
         }
         const { time, type, schedule } = req.query;
@@ -475,8 +471,8 @@ const getMyBets = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 matchStage.$expr = {
                     $eq: [
                         { $dateToString: { format: '%Y-%m-%d', date: '$schedule', timezone: 'UTC' } },
-                        formattedSchedule,
-                    ],
+                        formattedSchedule
+                    ]
                 };
             }
             if (type) {
@@ -494,10 +490,10 @@ const getMyBets = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 from: 'profiles',
                 localField: 'user',
                 foreignField: 'user',
-                as: 'profile',
-            },
+                as: 'profile'
+            }
         }, {
-            $unwind: '$profile',
+            $unwind: '$profile'
         }, {
             $project: {
                 type: 1,
@@ -506,8 +502,8 @@ const getMyBets = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     $dateToString: {
                         date: '$schedule',
                         format: '%Y-%m-%d',
-                        timezone: 'UTC',
-                    },
+                        timezone: 'UTC'
+                    }
                 },
                 time: 1,
                 amount: 1,
@@ -520,9 +516,9 @@ const getMyBets = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     address: 1,
                     contactNumber: 1,
                     gender: 1,
-                    verified: 1,
-                },
-            },
+                    verified: 1
+                }
+            }
         });
         const result = yield bet_model_1.Bet.aggregate(pipeline);
         if (result.length === 0) {
@@ -543,7 +539,7 @@ const getMyBets = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
     catch (error) {
         console.log('@getAll error', error);
-        res.status(500).json(api_statuses_const_1.statuses["0900"]);
+        res.status(500).json(api_statuses_const_2.statuses['0900']);
     }
 });
 exports.getMyBets = getMyBets;
@@ -566,29 +562,29 @@ const getDailyGross = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                     from: 'profiles',
                     localField: 'user',
                     foreignField: 'user',
-                    as: 'profile',
-                },
+                    as: 'profile'
+                }
             },
             {
-                $unwind: '$profile',
+                $unwind: '$profile'
             },
             {
                 $match: {
                     $expr: {
                         $eq: [
                             { $dateToString: { format: '%Y-%m-%d', date: '$schedule', timezone: 'UTC' } },
-                            formattedSchedule,
-                        ],
-                    },
-                },
+                            formattedSchedule
+                        ]
+                    }
+                }
             },
             {
                 $project: {
                     _id: 0,
                     amount: 1,
-                    number: 1,
-                },
-            },
+                    number: 1
+                }
+            }
         ];
         const result = yield bet_model_1.NumberStats.aggregate(aggregationPipeline);
         return res.json({
@@ -599,7 +595,7 @@ const getDailyGross = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
     catch (error) {
         console.error('@getDailyTotal', error);
-        res.status(500).json(api_statuses_const_1.statuses["0900"]);
+        res.status(500).json(api_statuses_const_2.statuses['0900']);
     }
 });
 exports.getDailyGross = getDailyGross;
@@ -608,36 +604,34 @@ const checkNumberAvailability = (req, res) => __awaiter(void 0, void 0, void 0, 
         // Check if there are any validation errors
         const error = new validation_util_1.RequestValidator().checkNumberAvailabilityAPI(req.query);
         if (error) {
-            res.status(400).json({
-                error: error.details[0].message.replace(/['"]/g, '')
-            });
+            res.status(400).json(Object.assign(Object.assign({}, api_statuses_const_2.statuses['501']), { error: error.details[0].message.replace(/['"]/g, '') }));
             return;
         }
         const { schedule, time, amount, rambled, number, type } = req.query;
-        const isRambled = rambled === "true";
+        const isRambled = rambled === 'true';
         const isSoldOut = yield isSoldOutNumber(number, schedule, time, isRambled);
         if (isSoldOut === null || isSoldOut === void 0 ? void 0 : isSoldOut.full) {
-            return res.status(403).json(api_statuses_const_1.statuses["0312"]);
+            return res.status(403).json(api_statuses_const_1.statuses['0312']);
         }
         if (((isSoldOut === null || isSoldOut === void 0 ? void 0 : isSoldOut.total) + amount) > (isSoldOut === null || isSoldOut === void 0 ? void 0 : isSoldOut.limit)) {
-            return res.status(403).json(api_statuses_const_1.statuses["0313"]);
+            return res.status(403).json(api_statuses_const_1.statuses['0313']);
         }
-        if (type === "STL" && !validTimeForSTL.includes(time)) {
-            return res.status(403).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0310"]), { data: `Time ${validTimeForSTL.join(", ")}` }));
+        if (type === 'STL' && !validTimeForSTL.includes(time)) {
+            return res.status(403).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses['0310']), { data: `Time ${validTimeForSTL.join(', ')}` }));
         }
-        if (type === "3D" && !validTimeFor3D.includes(time)) {
-            return res.status(403).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0310"]), { data: `Time ${validTimeFor3D.join(", ")}` }));
+        if (type === '3D' && !validTimeFor3D.includes(time)) {
+            return res.status(403).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses['0310']), { data: `Time ${validTimeFor3D.join(', ')}` }));
         }
         if (isRambled) {
             if (!allowedInRamble(number)) {
-                return res.status(403).json(api_statuses_const_1.statuses["0315"]);
+                return res.status(403).json(api_statuses_const_1.statuses['0315']);
             }
         }
-        return res.status(200).json(api_statuses_const_1.statuses["0300"]);
+        return res.status(200).json(api_statuses_const_1.statuses['0300']);
     }
     catch (error) {
         console.log('@checkNumberAvailability error', error);
-        res.status(500).json(api_statuses_const_1.statuses["0900"]);
+        res.status(500).json(api_statuses_const_2.statuses['0900']);
     }
 });
 exports.checkNumberAvailability = checkNumberAvailability;
@@ -666,9 +660,7 @@ const areEquivalentNumbers = (num1, num2) => {
 };
 const isSoldOutNumber = (number, schedule, time, ramble) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const today = new Date();
-        today.setUTCHours(0, 0, 0, 0); // Set the time to 00:00:00.0000 UTC for today
-        let pipeline = [
+        const pipeline = [
             {
                 $match: {
                     time,
@@ -676,11 +668,11 @@ const isSoldOutNumber = (number, schedule, time, ramble) => __awaiter(void 0, vo
                     $expr: {
                         $eq: [
                             { $dateToString: { format: '%Y-%m-%d', date: '$schedule', timezone: 'UTC' } },
-                            new Date(schedule).toISOString().substring(0, 10),
-                        ],
+                            new Date(schedule).toISOString().substring(0, 10)
+                        ]
                     }
-                },
-            },
+                }
+            }
         ];
         const result = yield bet_model_1.NumberStats.aggregate(pipeline);
         const total = (0, exports.getNumbersTotalAmount)(result);
@@ -717,37 +709,24 @@ const getNumbersTotalAmount = (arr) => {
 };
 exports.getNumbersTotalAmount = getNumbersTotalAmount;
 const getNumberAndLimitClassification = (number, ramble) => {
-    const digits = number.split("").map(Number);
-    const digitCounts = digits.reduce((count, digit) => {
-        count[digit] = (count[digit] || 0) + 1;
-        return count;
-    }, {});
     if (ramble) {
         return {
-            class: "ramble",
+            class: 'ramble',
             limit: Number(process.env.BET_RAMBLE_NUM_LIMIT)
         };
     }
-    const numDigits = digits.length;
-    if (Object.values(digitCounts).every((count) => count === 1)) {
-        return {
-            class: "normal",
-            limit: Number(process.env.BET_NORMAL_NUM_LIMIT)
-        };
+    const digits = number.split('').map(Number);
+    const uniqueDigits = new Set(digits);
+    const isDouble = digits.length === 3 && uniqueDigits.size === 2;
+    const isTriple = uniqueDigits.size === 1;
+    if (isDouble) {
+        return { class: 'double', limit: Number(process.env.BET_DOUBLE_NUM_LIMIT) };
     }
-    else if (Object.values(digitCounts).some((count) => count === numDigits)) {
-        return {
-            class: "triple",
-            limit: Number(process.env.BET_TRIPLE_NUM_LIMIT)
-        };
-        ;
+    else if (isTriple) {
+        return { class: 'triple', limit: Number(process.env.BET_TRIPLE_NUM_LIMIT) };
     }
     else {
-        return {
-            class: "double",
-            limit: Number(process.env.BET_DOUBLE_NUM_LIMIT)
-        };
-        ;
+        return { class: 'normal', limit: Number(process.env.BET_NORMAL_NUM_LIMIT) };
     }
 };
 //# sourceMappingURL=bet.controller.js.map

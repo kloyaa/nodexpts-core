@@ -24,7 +24,7 @@ exports.emitter.on(activity_enum_1.BetEventName.PLACE_BET, (payload) => __awaite
         // Create a new Activity document
         const newActivity = new activity_model_1.Activity({
             user: payload.user,
-            description: payload.description,
+            description: payload.description
         });
         // Save the new activity log to the database
         yield newActivity.save();
@@ -40,7 +40,7 @@ exports.emitter.on(activity_enum_1.BetEventName.BET_ACTIVITY, (payload) => __awa
         // Create a new Activity document
         const newActivity = new activity_model_1.Activity({
             user: payload.user,
-            description: payload.description,
+            description: payload.description
         });
         // Save the new activity log to the database
         yield newActivity.save();

@@ -49,11 +49,11 @@ const getAllActivityLogs = (req, res) => __awaiter(void 0, void 0, void 0, funct
                         verified: 1,
                         createdAt: 1,
                         updatedAt: 1,
-                        refferedBy: 1,
+                        refferedBy: 1
                     },
                     createdAt: 1,
-                    updatedAt: 1,
-                },
+                    updatedAt: 1
+                }
             },
             {
                 $sort: { createdAt: 1 }
@@ -68,8 +68,8 @@ const getAllActivityLogs = (req, res) => __awaiter(void 0, void 0, void 0, funct
         return res.status(200).json(result);
     }
     catch (error) {
-        console.log("@getAllActivityLogs error", error);
-        res.status(500).json(api_statuses_const_1.statuses["0900"]);
+        console.log('@getAllActivityLogs error', error);
+        res.status(500).json(api_statuses_const_1.statuses['0900']);
     }
 });
 exports.getAllActivityLogs = getAllActivityLogs;

@@ -19,29 +19,34 @@ const methods_util_1 = require("../utils/methods.util");
 const crypto_util_1 = require("../utils/crypto.util");
 const api_statuses_const_1 = require("../const/api-statuses.const");
 const isAuthenticated = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const authHeader = req.headers["authorization"];
-    if (!authHeader) {
-        return res.status(401).json(api_statuses_const_1.statuses["10020"]);
-    }
-    const token = authHeader.split(" ")[1];
-    if (!token) {
-        return res.status(401).json(api_statuses_const_1.statuses["10020"]);
-    }
-    const secrets = yield (0, aws_service_1.getAwsSecrets)();
-    const decryptedToken = (0, crypto_util_1.decrypt)(token, secrets === null || secrets === void 0 ? void 0 : secrets.CRYPTO_SECRET);
-    if (!decryptedToken) {
-        return res.status(401).json(api_statuses_const_1.statuses["10020"]);
-    }
-    if ((0, methods_util_1.isEmpty)(secrets === null || secrets === void 0 ? void 0 : secrets.JWT_SECRET_KEY)) {
-        return res.status(401).json(api_statuses_const_1.statuses["10010"]);
-    }
-    jsonwebtoken_1.default.verify(decryptedToken, secrets === null || secrets === void 0 ? void 0 : secrets.JWT_SECRET_KEY, (err, decoded) => {
-        if (err) {
+    try {
+        const authHeader = req.headers["authorization"];
+        if (!authHeader) {
             return res.status(401).json(api_statuses_const_1.statuses["10020"]);
         }
-        req.user = decoded;
-        next();
-    });
+        const token = authHeader.split(" ")[1];
+        if (!token) {
+            return res.status(401).json(api_statuses_const_1.statuses["10020"]);
+        }
+        const secrets = yield (0, aws_service_1.getAwsSecrets)();
+        const decryptedToken = (0, crypto_util_1.decrypt)(token, secrets === null || secrets === void 0 ? void 0 : secrets.CRYPTO_SECRET);
+        if (!decryptedToken) {
+            return res.status(401).json(api_statuses_const_1.statuses["10020"]);
+        }
+        if ((0, methods_util_1.isEmpty)(secrets === null || secrets === void 0 ? void 0 : secrets.JWT_SECRET_KEY)) {
+            return res.status(401).json(api_statuses_const_1.statuses["10010"]);
+        }
+        jsonwebtoken_1.default.verify(decryptedToken, secrets === null || secrets === void 0 ? void 0 : secrets.JWT_SECRET_KEY, (err, decoded) => {
+            if (err) {
+                return res.status(401).json(api_statuses_const_1.statuses["10020"]);
+            }
+            req.user = decoded;
+            next();
+        });
+    }
+    catch (error) {
+        return res.status(401).json(api_statuses_const_1.statuses["10020"]);
+    }
 });
 exports.isAuthenticated = isAuthenticated;
 //# sourceMappingURL=jwt.middleware.js.map

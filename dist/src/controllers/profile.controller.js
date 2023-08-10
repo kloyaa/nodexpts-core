@@ -22,22 +22,20 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         // Check if there are any validation errors
         const error = new validation_util_1.RequestValidator().createProfileAPI(req.body);
         if (error) {
-            res.status(400).json({
-                error: error.details[0].message.replace(/['"]/g, '')
-            });
+            res.status(400).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses['501']), { error: error.details[0].message.replace(/['"]/g, '') }));
             return;
         }
         const { firstName, lastName, birthdate, address, contactNumber, gender, refferedBy } = req.body;
         // Check if the user exists
         const user = yield user_model_1.User.findById(req.user.value);
         if (!user) {
-            res.status(404).json(api_statuses_const_1.statuses["0055"]);
+            res.status(404).json(api_statuses_const_1.statuses['0055']);
             return;
         }
         // Check if profile already exist
         const profile = yield profile_model_1.Profile.findOne({ user }).exec();
         if (profile) {
-            res.status(404).json(api_statuses_const_1.statuses["0103"]);
+            res.status(404).json(api_statuses_const_1.statuses['0103']);
             return;
         }
         // Create a new Profile document and associate it with the user
@@ -55,13 +53,13 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         yield newProfile.save();
         activity_event_1.emitter.emit(activity_enum_1.EventName.PROFILE_CREATION, {
             user: user._id,
-            description: activity_enum_1.ActivityType.PROFILE_CREATION,
+            description: activity_enum_1.ActivityType.PROFILE_CREATION
         });
-        res.status(201).json(api_statuses_const_1.statuses["0100"]);
+        res.status(201).json(api_statuses_const_1.statuses['0100']);
     }
     catch (error) {
-        console.log("@create error", error);
-        res.status(500).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0900"]), { error }));
+        console.log('@create error', error);
+        res.status(500).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses['0900']), { error }));
     }
 });
 exports.create = create;
@@ -70,9 +68,7 @@ const getProfileByLoginId = (req, res) => __awaiter(void 0, void 0, void 0, func
         // Check if there are any validation errors
         const error = new validation_util_1.RequestValidator().getProfileByLoginIdAPI(req.query);
         if (error) {
-            res.status(400).json({
-                error: error.details[0].message.replace(/['"]/g, '')
-            });
+            res.status(400).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses['501']), { error: error.details[0].message.replace(/['"]/g, '') }));
             return;
         }
         const pipeline = [
@@ -116,7 +112,7 @@ const getProfileByLoginId = (req, res) => __awaiter(void 0, void 0, void 0, func
         // Execute the aggregation pipeline
         const result = yield user_model_1.User.aggregate(pipeline);
         if (result.length === 0) {
-            res.status(403).json(api_statuses_const_1.statuses["0104"]);
+            res.status(403).json(api_statuses_const_1.statuses['0104']);
             return;
         }
         // Return the user object along with the user's profile
@@ -124,7 +120,7 @@ const getProfileByLoginId = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
     catch (error) {
         console.log('@getProfileByUsername error', error);
-        res.status(500).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0900"]), { error }));
+        res.status(500).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses['0900']), { error }));
     }
 });
 exports.getProfileByLoginId = getProfileByLoginId;
@@ -159,7 +155,7 @@ const getAllProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function*
             },
             // Match only the users with verified profiles
             ...(typeof verified === 'boolean' || verified === 'true' || verified === 'false'
-                ? [{ $match: { 'profile.verified': verified === 'true' ? true : false } }]
+                ? [{ $match: { 'profile.verified': verified === 'true' } }]
                 : []),
             // Project only the required fields for the user and the profile
             {
@@ -178,11 +174,11 @@ const getAllProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function*
                         verified: 1,
                         createdAt: 1,
                         updatedAt: 1,
-                        refferedBy: 1,
+                        refferedBy: 1
                     },
                     createdAt: 1,
-                    updatedAt: 1,
-                },
+                    updatedAt: 1
+                }
             },
             { $sort: { createdAt: -1 } }
         ];
@@ -196,7 +192,7 @@ const getAllProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
     catch (error) {
         console.log('@getAllActiveProfiles error', error);
-        res.status(500).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0900"]), { error }));
+        res.status(500).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses['0900']), { error }));
     }
 });
 exports.getAllProfiles = getAllProfiles;
@@ -251,7 +247,7 @@ const me = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         // Execute the aggregation pipeline
         const result = yield user_model_1.User.aggregate(pipeline);
         if (result.length === 0) {
-            res.status(403).json(api_statuses_const_1.statuses["0104"]);
+            res.status(403).json(api_statuses_const_1.statuses['0104']);
             return;
         }
         // Return the user object along with the user's profile
@@ -259,7 +255,7 @@ const me = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
     catch (error) {
         console.log('@me error', error);
-        res.status(500).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses["0900"]), { error }));
+        res.status(500).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses['0900']), { error }));
     }
 });
 exports.me = me;

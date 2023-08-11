@@ -16,7 +16,6 @@
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.370.0",
     "@paralleldrive/cuid2": "^2.2.1",
-    "@typescript-eslint/parser": "^6.3.0",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.6",

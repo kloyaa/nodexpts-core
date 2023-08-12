@@ -10,7 +10,7 @@ import { BetActivityType, BetEventName } from '../enum/activity.enum'
 import { BetResult } from '../models/bet-result.model'
 import { generateReference } from '../../__core/utils/generator.util'
 import { getBetResultRepository, getMyBetsRepository } from '../repositories/bet.repository'
-import { gtISODate } from '../../__core/utils/date.util'
+import { getISODate } from '../../__core/utils/date.util'
 import { breakCombinations } from '../utils/bet.util'
 import { statuses } from '../../__core/const/api-statuses.const'
 require('dotenv').config()
@@ -614,7 +614,7 @@ export const getMyBets = async (req: Request & { user?: any }, res: Response): P
 }
 
 export const getMyBetResultsWithWins = async (req: Request & { user?: any }, res: Response): Promise<Response<any>> => {
-  const dateToday = gtISODate()
+  const dateToday = getISODate()
   const myBets = await getMyBetsRepository({ user: req.user.value, schedule: dateToday })
   const todaysResult = await getBetResultRepository(dateToday)
 

@@ -1,4 +1,4 @@
-export const gtISODate = () => {
+export const getISODate = () => {
     const today = new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" });
     const dateObject = new Date(today); // Convert the formatted string back to a Date object
     const year = dateObject.getFullYear();
@@ -7,4 +7,3 @@ export const gtISODate = () => {
     const formattedDate = `${year}-${month}-${day}`;
     return formattedDate;
 };
-  

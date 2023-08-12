@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 import { type IBet } from '../interface/bet.interface'
 import { Bet } from '../models/bet.model'
 import { BetResult } from '../models/bet-result.model'
+import { getISODate } from '../../__core/utils/date.util'
 
 interface IGetMyBetsRepository {
   time?: string
@@ -109,8 +110,8 @@ export const getMyBetsRepository = async (query: IGetMyBetsRepository) => {
 
 export const getBetResultRepository = async (schedule?: string | undefined) => {
   const formattedSchedule = schedule
-    ? new Date(schedule as unknown as Date).toISOString().substring(0, 10)
-    : new Date().toISOString().substring(0, 10)
+    ? getISODate()
+    : schedule
 
   console.log(formattedSchedule)
   const aggregationPipeline: any[] = [

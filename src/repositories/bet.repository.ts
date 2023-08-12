@@ -110,8 +110,8 @@ export const getMyBetsRepository = async (query: IGetMyBetsRepository) => {
 
 export const getBetResultRepository = async (schedule?: string | undefined) => {
   const formattedSchedule = schedule
-    ? getISODate()
-    : schedule
+    ? schedule
+    : getISODate()
 
   console.log(formattedSchedule)
   const aggregationPipeline: any[] = [

@@ -190,7 +190,7 @@ export const createBetResult = async (req: Request & { user?: any }, res: Respon
     return
   }
 
-  const { number, schedule, time, type } = req.body
+  const { number, time, type } = req.body
 
   if (type === 'STL' && !validTimeForSTL.includes(time)) {
     return res.status(403).json({
@@ -204,17 +204,13 @@ export const createBetResult = async (req: Request & { user?: any }, res: Respon
     })
   }
 
-  const formattedSchedule = schedule
-    ? new Date(schedule as unknown as Date).toISOString().substring(0, 10)
-    : new Date().toISOString().substring(0, 10)
-
   const aggregationPipeline: any[] = [
     {
       $match: {
         $expr: {
           $eq: [
             { $dateToString: { format: '%Y-%m-%d', date: '$schedule', timezone: 'UTC' } },
-            formattedSchedule
+            getISODate()
           ]
         },
         time
@@ -238,7 +234,7 @@ export const createBetResult = async (req: Request & { user?: any }, res: Respon
 
   const newBetResult = new BetResult({
     number,
-    schedule,
+    schedule: getISODate(),
     time,
     type
   })

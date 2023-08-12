@@ -108,7 +108,7 @@ export class RequestValidator {
     createBetResultAPI(body: any) {
         const { error } = Joi.object({
             type: Joi.string().valid("3D", "STL").required(),
-            schedule: Joi.string().required(),
+            schedule: Joi.string().optional(),
             number: Joi.string().required().length(3),
             time: Joi.string().valid("10:30 AM", "3:00 PM", "8:00 PM", "2:00 PM", "5:00 PM", "9:00 PM").required(),
         }).validate(body);

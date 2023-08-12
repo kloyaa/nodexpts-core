@@ -174,23 +174,20 @@ const createBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function
         res.status(400).json(Object.assign(Object.assign({}, api_statuses_const_2.statuses['501']), { error: error.details[0].message.replace(/['"]/g, '') }));
         return;
     }
-    const { number, schedule, time, type } = req.body;
+    const { number, time, type } = req.body;
     if (type === 'STL' && !validTimeForSTL.includes(time)) {
         return res.status(403).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses['0310']), { data: `Time ${validTimeForSTL.join(', ')}` }));
     }
     if (type === '3D' && !validTimeFor3D.includes(time)) {
         return res.status(403).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses['0310']), { data: `Time ${validTimeFor3D.join(', ')}` }));
     }
-    const formattedSchedule = schedule
-        ? new Date(schedule).toISOString().substring(0, 10)
-        : new Date().toISOString().substring(0, 10);
     const aggregationPipeline = [
         {
             $match: {
                 $expr: {
                     $eq: [
                         { $dateToString: { format: '%Y-%m-%d', date: '$schedule', timezone: 'UTC' } },
-                        formattedSchedule
+                        (0, date_util_1.getISODate)()
                     ]
                 },
                 time
@@ -212,7 +209,7 @@ const createBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
     const newBetResult = new bet_result_model_1.BetResult({
         number,
-        schedule,
+        schedule: (0, date_util_1.getISODate)(),
         time,
         type
     });
@@ -544,7 +541,7 @@ const getMyBets = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.getMyBets = getMyBets;
 const getMyBetResultsWithWins = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const dateToday = (0, date_util_1.gtISODate)();
+    const dateToday = (0, date_util_1.getISODate)();
     const myBets = yield (0, bet_repository_1.getMyBetsRepository)({ user: req.user.value, schedule: dateToday });
     const todaysResult = yield (0, bet_repository_1.getBetResultRepository)(dateToday);
     return res.status(200).json(winCount(todaysResult, myBets));

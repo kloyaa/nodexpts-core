@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.gtISODate = void 0;
-const gtISODate = () => {
+exports.getISODate = void 0;
+const getISODate = () => {
     const today = new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" });
     const dateObject = new Date(today); // Convert the formatted string back to a Date object
     const year = dateObject.getFullYear();
@@ -10,5 +10,5 @@ const gtISODate = () => {
     const formattedDate = `${year}-${month}-${day}`;
     return formattedDate;
 };
-exports.gtISODate = gtISODate;
+exports.getISODate = getISODate;
 //# sourceMappingURL=date.util.js.map

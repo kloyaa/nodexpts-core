@@ -16,6 +16,7 @@ exports.getBetResultRepository = exports.getMyBetsRepository = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const bet_model_1 = require("../models/bet.model");
 const bet_result_model_1 = require("../models/bet-result.model");
+const date_util_1 = require("../../__core/utils/date.util");
 const getMyBetsRepository = (query) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { time, type, schedule, user } = query;
@@ -102,8 +103,8 @@ const getMyBetsRepository = (query) => __awaiter(void 0, void 0, void 0, functio
 exports.getMyBetsRepository = getMyBetsRepository;
 const getBetResultRepository = (schedule) => __awaiter(void 0, void 0, void 0, function* () {
     const formattedSchedule = schedule
-        ? new Date(schedule).toISOString().substring(0, 10)
-        : new Date().toISOString().substring(0, 10);
+        ? schedule
+        : (0, date_util_1.getISODate)();
     console.log(formattedSchedule);
     const aggregationPipeline = [
         {

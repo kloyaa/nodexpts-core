@@ -66,7 +66,7 @@ router.get('/bet/v1/daily-result',
   getBetResultsBySchedule
 )
 
-router.delete('/bet/v1/remove/:_id',
+router.delete('/bet/v1/remove',
   isAuthenticated,
   isUserProfileCreated,
   deleteBetResult

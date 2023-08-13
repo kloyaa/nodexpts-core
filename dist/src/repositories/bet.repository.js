@@ -12,11 +12,95 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getBetResultRepository = exports.getMyBetsRepository = void 0;
+exports.getBetResultRepository = exports.getMyBetsRepository = exports.getAllBetsRepository = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const bet_model_1 = require("../models/bet.model");
 const bet_result_model_1 = require("../models/bet-result.model");
 const date_util_1 = require("../../__core/utils/date.util");
+const getAllBetsRepository = (query) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { time, type, schedule } = query;
+        const pipeline = [];
+        if (time || type || schedule) {
+            const formattedSchedule = schedule
+                ? new Date(schedule).toISOString().substring(0, 10)
+                : new Date().toISOString().substring(0, 10);
+            const matchStage = {};
+            if (formattedSchedule) {
+                matchStage.$expr = {
+                    $eq: [
+                        { $dateToString: { format: '%Y-%m-%d', date: '$schedule', timezone: 'UTC' } },
+                        formattedSchedule
+                    ]
+                };
+            }
+            if (type) {
+                matchStage.type = type;
+            }
+            if (time) {
+                matchStage.time = time;
+            }
+            pipeline.push({
+                $match: Object.assign({}, matchStage)
+            });
+        }
+        pipeline.push({
+            $lookup: {
+                from: 'profiles',
+                localField: 'user',
+                foreignField: 'user',
+                as: 'profile'
+            }
+        }, {
+            $unwind: '$profile'
+        }, {
+            $project: {
+                type: 1,
+                number: 1,
+                schedule: {
+                    $dateToString: {
+                        date: '$schedule',
+                        format: '%Y-%m-%d',
+                        timezone: 'UTC'
+                    }
+                },
+                time: 1,
+                amount: 1,
+                rambled: 1,
+                reference: 1,
+                profile: {
+                    firstName: 1,
+                    lastName: 1,
+                    birthdate: 1,
+                    address: 1,
+                    contactNumber: 1,
+                    gender: 1,
+                    verified: 1
+                }
+            }
+        });
+        const result = yield bet_model_1.Bet.aggregate(pipeline);
+        if (result.length === 0) {
+            return [];
+        }
+        const mergedData = result.reduce((result, current) => {
+            const existingItem = result.find((item) => item.reference === current.reference);
+            if (existingItem) {
+                existingItem.amount += current.amount;
+            }
+            else {
+                result.push(Object.assign({}, current));
+            }
+            return result;
+        }, []);
+        return mergedData;
+    }
+    catch (error) {
+        console.log('@getAllBets error', error);
+        throw error;
+    }
+});
+exports.getAllBetsRepository = getAllBetsRepository;
 const getMyBetsRepository = (query) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { time, type, schedule, user } = query;
@@ -96,7 +180,7 @@ const getMyBetsRepository = (query) => __awaiter(void 0, void 0, void 0, functio
         return mergedData;
     }
     catch (error) {
-        console.log('@getAll error', error);
+        console.log('@getMyBetsRepository error', error);
         throw error;
     }
 });

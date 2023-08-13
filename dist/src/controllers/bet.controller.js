@@ -251,9 +251,10 @@ const getAllBetResults = (req, res) => __awaiter(void 0, void 0, void 0, functio
 exports.getAllBetResults = getAllBetResults;
 const getBetResultsBySchedule = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { schedule } = req.query;
+    const dateToday = (0, date_util_1.getISODate)();
     const formattedSchedule = schedule
         ? new Date(schedule).toISOString().substring(0, 10)
-        : new Date().toISOString().substring(0, 10);
+        : dateToday;
     const aggregationPipeline = [
         {
             $match: {
@@ -276,7 +277,8 @@ const getBetResultsBySchedule = (req, res) => __awaiter(void 0, void 0, void 0, 
         }
     ];
     const result = yield bet_result_model_1.BetResult.aggregate(aggregationPipeline);
-    return res.status(200).json(result);
+    const myBets = yield (0, bet_repository_1.getAllBetsRepository)({ schedule: dateToday });
+    return res.status(200).json(winCount(result, myBets));
 });
 exports.getBetResultsBySchedule = getBetResultsBySchedule;
 const deleteBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {

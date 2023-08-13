@@ -9,7 +9,7 @@ import { type IActivity } from '../../__core/interfaces/schema.interface'
 import { BetActivityType, BetEventName } from '../enum/activity.enum'
 import { BetResult } from '../models/bet-result.model'
 import { generateReference } from '../../__core/utils/generator.util'
-import { getBetResultRepository, getMyBetsRepository } from '../repositories/bet.repository'
+import { getAllBetsRepository, getBetResultRepository, getMyBetsRepository } from '../repositories/bet.repository'
 import { getISODate } from '../../__core/utils/date.util'
 import { breakCombinations } from '../utils/bet.util'
 import { statuses } from '../../__core/const/api-statuses.const'
@@ -286,9 +286,10 @@ export const getAllBetResults = async (req: Request & { user?: any }, res: Respo
 export const getBetResultsBySchedule = async (req: Request & { user?: any }, res: Response): Promise<Response<any>> => {
   const { schedule } = req.query
 
+  const dateToday = getISODate();
   const formattedSchedule = schedule
     ? new Date(schedule as unknown as Date).toISOString().substring(0, 10)
-    : new Date().toISOString().substring(0, 10)
+    : dateToday
 
   const aggregationPipeline: any[] = [
     {
@@ -313,7 +314,9 @@ export const getBetResultsBySchedule = async (req: Request & { user?: any }, res
   ]
 
   const result = await BetResult.aggregate(aggregationPipeline)
-  return res.status(200).json(result)
+  const myBets = await getAllBetsRepository({ schedule: dateToday })
+
+  return res.status(200).json(winCount(result, myBets))
 }
 
 export const deleteBetResult = async (req: Request & { user?: any }, res: Response): Promise<Response<any>> => {

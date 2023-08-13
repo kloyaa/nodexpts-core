@@ -320,24 +320,37 @@ export const getBetResultsBySchedule = async (req: Request & { user?: any }, res
 }
 
 export const deleteBetResult = async (req: Request & { user?: any }, res: Response): Promise<Response<any>> => {
-  const { _id } = req.params
-
-  try {
-    const betResult = await BetResult.findByIdAndDelete(_id)
-
-    if (!betResult) {
-      return res.status(404).json({ error: 'Bet result not found' })
+    // Check if there are any validation errors
+    const error = new RequestValidator().deleteBetResultAPI(req.body)
+    if (error) {
+      res.status(400).json({
+        ...statuses['501'],
+        error: error.details[0].message.replace(/['"]/g, '')
+      })
+      return
     }
 
-    emitter.emit(BetEventName.BET_ACTIVITY, {
-      user: req.user.value,
-      description: BetActivityType.DELETED_BET_RESULT
-    } as IActivity)
+    try {
+      const { time } = req.body;
+      const dateToday = getISODate();
+      const betResult = await BetResult.findOneAndDelete({
+        time,
+        schedule: dateToday
+      })
 
-    return res.json(statuses['0300'])
+      if (!betResult) {
+        return res.status(404).json(statuses["02"])
+      }
+
+      emitter.emit(BetEventName.BET_ACTIVITY, {
+        user: req.user.value,
+        description: BetActivityType.DELETED_BET_RESULT
+      } as IActivity)
+
+    return res.json(statuses['00'])
   } catch (error) {
     console.log('@deleteBetResult error', error)
-    res.status(500).json(statuses['0900'])
+    return res.status(500).json(statuses['0900'])
   }
 }
 

@@ -282,21 +282,31 @@ const getBetResultsBySchedule = (req, res) => __awaiter(void 0, void 0, void 0, 
 });
 exports.getBetResultsBySchedule = getBetResultsBySchedule;
 const deleteBetResult = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { _id } = req.params;
+    // Check if there are any validation errors
+    const error = new validation_util_1.RequestValidator().deleteBetResultAPI(req.body);
+    if (error) {
+        res.status(400).json(Object.assign(Object.assign({}, api_statuses_const_2.statuses['501']), { error: error.details[0].message.replace(/['"]/g, '') }));
+        return;
+    }
     try {
-        const betResult = yield bet_result_model_1.BetResult.findByIdAndDelete(_id);
+        const { time } = req.body;
+        const dateToday = (0, date_util_1.getISODate)();
+        const betResult = yield bet_result_model_1.BetResult.findOneAndDelete({
+            time,
+            schedule: dateToday
+        });
         if (!betResult) {
-            return res.status(404).json({ error: 'Bet result not found' });
+            return res.status(404).json(api_statuses_const_2.statuses["02"]);
         }
         activity_event_1.emitter.emit(activity_enum_1.BetEventName.BET_ACTIVITY, {
             user: req.user.value,
             description: activity_enum_1.BetActivityType.DELETED_BET_RESULT
         });
-        return res.json(api_statuses_const_2.statuses['0300']);
+        return res.json(api_statuses_const_2.statuses['00']);
     }
     catch (error) {
         console.log('@deleteBetResult error', error);
-        res.status(500).json(api_statuses_const_2.statuses['0900']);
+        return res.status(500).json(api_statuses_const_2.statuses['0900']);
     }
 });
 exports.deleteBetResult = deleteBetResult;

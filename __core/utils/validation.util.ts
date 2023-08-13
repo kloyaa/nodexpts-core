@@ -13,6 +13,14 @@ export class RequestValidator {
 
         return error;
     }
+    
+    deleteBetResultAPI(body: any) {
+        const { error } = Joi.object({
+            time: Joi.string().valid("10:30 AM", "3:00 PM", "8:00 PM", "2:00 PM", "5:00 PM", "9:00 PM").required(),
+        }).validate(body);
+
+        return error;
+    }
 
     registerAPI(body: any) {
         const { error } = Joi.object({

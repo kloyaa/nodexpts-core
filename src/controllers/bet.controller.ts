@@ -171,7 +171,7 @@ export const createBulkBets = async (req: Request & { user?: any }, res: Respons
     } as IActivity)
 
     return res.status(201).json({
-      ...statuses['0300'],
+      ...statuses['00'],
       data: { reference }
     })
   } catch (error) {
@@ -284,20 +284,14 @@ export const getAllBetResults = async (req: Request & { user?: any }, res: Respo
 }
 
 export const getBetResultsBySchedule = async (req: Request & { user?: any }, res: Response): Promise<Response<any>> => {
-  const { schedule } = req.query
-
   const dateToday = getISODate();
-  const formattedSchedule = schedule
-    ? new Date(schedule as unknown as Date).toISOString().substring(0, 10)
-    : dateToday
-
   const aggregationPipeline: any[] = [
     {
       $match: {
         $expr: {
           $eq: [
             { $dateToString: { format: '%Y-%m-%d', date: '$schedule', timezone: 'UTC' } },
-            formattedSchedule
+            dateToday
           ]
         }
       }

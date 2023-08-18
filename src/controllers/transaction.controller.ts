@@ -132,7 +132,25 @@ export const getTransactions = async (req: Request, res: Response): Promise<Resp
 
     // Get transactions using the aggregation pipeline
     const transactions = await Transaction.aggregate(pipeline)
-    res.status(200).json(transactions)
+
+    const totalAmount = transactions.reduce((acc, transaction) => {
+      const contentAmounts = transaction.content.map((item: any) => item.amount);
+      const transactionTotalAmount = contentAmounts.reduce((sum: any, amount: any) => sum + amount, 0);
+      return acc + transactionTotalAmount;
+    }, 0);
+
+    const numberOf3DTransactions = transactions.filter(transaction => transaction.game === "3D").length;
+    const numberOfSTLTransactions = transactions.filter(transaction => transaction.game === "STL").length;
+
+    res
+    .status(200)
+    .header({ 
+      'SWSYA-Txn-Total': totalAmount, 
+      'SWSYA-Txn-Count': transactions.length,
+      'SWSYA-Stl-Count': numberOfSTLTransactions,
+      'SWSYA-Swt-Count': numberOf3DTransactions
+    })
+    .json(transactions)
   } catch (error) {
     console.error('@getTransactions', error)
     res.status(500).json(betStatuses['0900'])

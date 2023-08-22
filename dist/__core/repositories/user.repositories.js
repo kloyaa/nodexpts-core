@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isClientVerified = exports.isClientProfileCreated = void 0;
+exports.isClientActive = exports.isClientVerified = exports.isClientProfileCreated = void 0;
 const profile_model_1 = require("../models/profile.model");
 // Checking
 const isClientProfileCreated = (clientId) => __awaiter(void 0, void 0, void 0, function* () {
@@ -32,4 +32,14 @@ const isClientVerified = (clientId) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.isClientVerified = isClientVerified;
+const isClientActive = (clientId) => __awaiter(void 0, void 0, void 0, function* () {
+    const profile = yield profile_model_1.Profile.findOne({ user: clientId }).exec();
+    if ((profile === null || profile === void 0 ? void 0 : profile.revoked) === false && profile !== null) {
+        return true;
+    }
+    else {
+        return false;
+    }
+});
+exports.isClientActive = isClientActive;
 //# sourceMappingURL=user.repositories.js.map

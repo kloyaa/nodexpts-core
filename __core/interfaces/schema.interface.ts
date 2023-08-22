@@ -27,6 +27,7 @@ export interface IProfile extends Document {
     refferedBy: string;
     gender: 'male' | 'female' | 'other';
     verified: boolean;
+    revoked: boolean;
     // Other profile properties
 }
 

@@ -74,6 +74,11 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 res.status(401).json(api_statuses_const_1.statuses['0055']);
                 return;
             }
+            const isActive = yield (0, user_repositories_1.isClientActive)(user._id);
+            if (!isActive) {
+                res.status(401).json(api_statuses_const_1.statuses['0058']);
+                return;
+            }
         }
         activity_event_1.emitter.emit(activity_enum_1.EventName.LOGIN, {
             user: user._id,

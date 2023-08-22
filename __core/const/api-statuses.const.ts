@@ -40,7 +40,7 @@ export const statuses = {
         code: "0054",
     },
     "0055": {
-        message: "Account not verified, Please contact the administrator.",
+        message: "Account not verified. Please contact the administrator.",
         code: "0055",
     },
     "0056": {
@@ -50,6 +50,10 @@ export const statuses = {
     "0057": {
         message: "User not authorized for this role.",
         code: "0057",
+    },
+    "0058": {
+        message: "Account has been invalidated. Please contact the administrator.",
+        code: "0058",
     },
     /**
      * @alias Profile

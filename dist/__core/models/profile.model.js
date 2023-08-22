@@ -42,6 +42,10 @@ const profileSchema = new mongoose_1.Schema({
         type: Boolean,
         default: false
     },
+    revoked: {
+        type: Boolean,
+        default: false
+    },
     // Other profile properties
 }, { timestamps: true });
 // Create and export the Profile model

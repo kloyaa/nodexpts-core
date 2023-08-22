@@ -45,10 +45,10 @@ export const updateProfileVerifiedStatus = async (req: Request & { user?: any },
       description: ActivityType.PROFILE_VERIFICATION
     } as IActivity)
 
-    res.status(200).json(profile)
+    return res.status(200).json(statuses["00"])
   } catch (error) {
     console.log('@updateProfileVerified error', error)
-    res.status(500).json(error)
+    return res.status(500).json(statuses["0900"])
   }
 }
 
@@ -65,7 +65,7 @@ export const getDailyTotal = async (req: Request, res: Response): Promise<Respon
     })
   } catch (error) {
     console.log('@getDailyTotal error', error)
-    res.status(500).json(error)
+    return res.status(500).json(statuses["0900"])
   }
 }
 
@@ -104,6 +104,6 @@ export const createRoleForUser = async (req: Request & { user?: any }, res: Resp
     return res.status(201).json(userRole)
   } catch (error) {
     console.error('Error creating user role:', error)
-    return res.status(500).json({ error: 'Internal Server Error' })
+    return res.status(500).json(statuses["0900"])
   }
 }

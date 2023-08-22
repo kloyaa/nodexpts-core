@@ -4,7 +4,7 @@ import { isAuthenticated } from '../../__core/middlewares/jwt.middleware'
 import { isAdmin } from '../../__core/middlewares/role.middleware'
 const router = Router()
 
-router.post('/employee/v1/profile-verification',
+router.put('/employee/v1/profile-verification',
   isAuthenticated,
   isAdmin,
   updateProfileVerifiedStatus

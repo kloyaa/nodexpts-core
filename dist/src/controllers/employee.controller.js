@@ -45,11 +45,11 @@ const updateProfileVerifiedStatus = (req, res) => __awaiter(void 0, void 0, void
             user: req.user.value,
             description: activity_enum_1.ActivityType.PROFILE_VERIFICATION
         });
-        res.status(200).json(profile);
+        return res.status(200).json(api_statuses_const_1.statuses["00"]);
     }
     catch (error) {
         console.log('@updateProfileVerified error', error);
-        res.status(500).json(error);
+        return res.status(500).json(api_statuses_const_1.statuses["0900"]);
     }
 });
 exports.updateProfileVerifiedStatus = updateProfileVerifiedStatus;
@@ -66,7 +66,7 @@ const getDailyTotal = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
     catch (error) {
         console.log('@getDailyTotal error', error);
-        res.status(500).json(error);
+        return res.status(500).json(api_statuses_const_1.statuses["0900"]);
     }
 });
 exports.getDailyTotal = getDailyTotal;
@@ -98,7 +98,7 @@ const createRoleForUser = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
     catch (error) {
         console.error('Error creating user role:', error);
-        return res.status(500).json({ error: 'Internal Server Error' });
+        return res.status(500).json(api_statuses_const_1.statuses["0900"]);
     }
 });
 exports.createRoleForUser = createRoleForUser;

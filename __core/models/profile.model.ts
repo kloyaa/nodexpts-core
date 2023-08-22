@@ -41,6 +41,10 @@ const profileSchema = new Schema<IProfile>({
         type: Boolean, 
         default: false 
     },
+    revoked: { 
+        type: Boolean, 
+        default: false 
+    },
     // Other profile properties
 }, { timestamps: true });
 

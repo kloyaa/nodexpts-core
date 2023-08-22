@@ -9,7 +9,7 @@ import { generateJwt } from '../../__core/utils/jwt.util'
 import { decrypt, encrypt } from '../../__core/utils/crypto.util'
 import { getAwsSecrets } from '../../__core/services/aws.service'
 import { isEmpty } from '../../__core/utils/methods.util'
-import { isClientProfileCreated, isClientVerified } from '../../__core/repositories/user.repositories'
+import { isClientActive, isClientProfileCreated, isClientVerified } from '../../__core/repositories/user.repositories'
 import { emitter } from '../../__core/events/activity.event'
 import { ActivityType, EventName } from '../../__core/enum/activity.enum'
 import { UserRole } from '../../__core/models/roles.model'
@@ -69,6 +69,11 @@ export const login = async (req: Request & { from: string }, res: Response): Pro
       const isVerified = await isClientVerified(user._id)
       if (!isVerified) {
         res.status(401).json(statuses['0055'])
+        return
+      }
+      const isActive = await isClientActive(user._id)
+      if (!isActive) {
+        res.status(401).json(statuses['0058'])
         return
       }
     }

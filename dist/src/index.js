@@ -44,7 +44,14 @@ function runApp() {
     return __awaiter(this, void 0, void 0, function* () {
         // Middleware
         app.use((0, helmet_1.default)()); // Apply standard security headers
-        app.use((0, cors_1.default)()); // Enable CORS for all routes
+        app.use((0, cors_1.default)({
+            exposedHeaders: [
+                'SWSYA-Txn-Total',
+                'SWSYA-Txn-Count',
+                'SWSYA-Stl-Count',
+                'SWSYA-Swt-Count'
+            ]
+        })); // Enable CORS for all routes
         app.use(express_1.default.json());
         app.use(express_1.default.static(path_1.default.join(__dirname, 'public')));
         // Routes

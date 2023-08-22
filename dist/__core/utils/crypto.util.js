@@ -17,12 +17,13 @@ const encrypt = (json, secretKey) => {
         return `${iv.toString('hex')}.${encrypted}`;
     }
     catch (error) {
-        console.log("@encrypt error", exports.encrypt);
+        console.log("@encrypt error", error);
         return null;
     }
 };
 exports.encrypt = encrypt;
 const decrypt = (encryptedData, secretKey) => {
+    console.log(encryptedData, secretKey);
     try {
         const [hashIv, hashData] = encryptedData.split(".");
         const algorithm = 'AES-256-CBC';
@@ -34,7 +35,7 @@ const decrypt = (encryptedData, secretKey) => {
         return JSON.parse(decrypted);
     }
     catch (error) {
-        console.log("@decrypt error", exports.encrypt);
+        console.log("@decrypt error", error);
         return null;
     }
 };

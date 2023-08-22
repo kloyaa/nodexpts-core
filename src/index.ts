@@ -32,7 +32,14 @@ const envVars = {
 async function runApp () {
   // Middleware
   app.use(helmet()) // Apply standard security headers
-  app.use(cors()) // Enable CORS for all routes
+  app.use(cors({
+    exposedHeaders: [
+      'SWSYA-Txn-Total', 
+      'SWSYA-Txn-Count',
+      'SWSYA-Stl-Count',
+      'SWSYA-Swt-Count'
+    ]
+  })) // Enable CORS for all routes
   app.use(express.json())
   app.use(express.static(path.join(__dirname, 'public')))
 

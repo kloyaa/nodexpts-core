@@ -12,12 +12,13 @@ export const encrypt = (json: any, secretKey: string) => {
 
         return `${iv.toString('hex')}.${encrypted}`
     } catch (error) {
-        console.log("@encrypt error", encrypt)
+        console.log("@encrypt error", error)
         return null;
     }
 };
 
 export const decrypt = (encryptedData: string, secretKey: string) => {
+    console.log(encryptedData, secretKey)
     try {
         const [hashIv, hashData] = encryptedData.split(".");
         const algorithm = 'AES-256-CBC';
@@ -28,7 +29,7 @@ export const decrypt = (encryptedData: string, secretKey: string) => {
         decrypted += decipher.final('utf8');
         return JSON.parse(decrypted);
     } catch (error) {
-        console.log("@decrypt error", encrypt)
+        console.log("@decrypt error", error)
         return null;
     }
 };

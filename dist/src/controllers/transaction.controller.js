@@ -123,7 +123,7 @@ const getTransactions = (req, res) => __awaiter(void 0, void 0, void 0, function
                 }
             },
             {
-                $sort: { createdAt: 1 }
+                $sort: { createdAt: -1 }
             }
             // Add more stages as needed
         ];

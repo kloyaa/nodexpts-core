@@ -125,7 +125,7 @@ export const getTransactions = async (req: Request, res: Response): Promise<Resp
         }
       },
       {
-        $sort: { createdAt: 1 }
+        $sort: { createdAt: -1 }
       }
       // Add more stages as needed
     ]

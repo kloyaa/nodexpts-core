@@ -18,7 +18,6 @@ export const encrypt = (json: any, secretKey: string) => {
 };
 
 export const decrypt = (encryptedData: string, secretKey: string) => {
-    console.log(encryptedData, secretKey)
     try {
         const [hashIv, hashData] = encryptedData.split(".");
         const algorithm = 'AES-256-CBC';

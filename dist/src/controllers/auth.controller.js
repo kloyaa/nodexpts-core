@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logout = exports.verifyToken = exports.register = exports.login = void 0;
+exports.logout = exports.verifyToken = exports.register = exports.encryptedLogin = exports.encryptLogin = exports.login = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const user_model_1 = require("../../__core/models/user.model");
@@ -89,6 +89,100 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.login = login;
+const encryptLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Check if there are any validation errors
+        const error = new validation_util_1.RequestValidator().loginAPI(req.body);
+        if (error) {
+            res.status(400).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses['501']), { error: error.details[0].message.replace(/['"]/g, '') }));
+            return;
+        }
+        const { username, password } = req.body;
+        // Get secrets
+        const secrets = yield (0, aws_service_1.getAwsSecrets)();
+        if ((0, methods_util_1.isEmpty)(secrets)) {
+            res.status(401).json(api_statuses_const_1.statuses['0300']);
+            return;
+        }
+        // Check if the user exists based on the username
+        const user = yield user_model_1.User.findOne({ username }).exec();
+        if (!user) {
+            // User not found
+            res.status(401).json(api_statuses_const_1.statuses['0051']);
+            return;
+        }
+        // Find the user's role based on the user ID
+        const userRole = yield roles_model_1.UserRole.findOne({ user: user._id }).exec();
+        // Check if the user has the admin role
+        if ((userRole.name === 'client') && req.from !== 'mobile') {
+            return res.status(401).json(api_statuses_const_1.statuses['0057']);
+        }
+        else if ((userRole.name === 'admin') && req.from !== 'web') {
+            return res.status(401).json(api_statuses_const_1.statuses['0057']);
+        }
+        // Compare the provided password with the stored hashed password
+        const isPasswordValid = yield bcrypt_1.default.compare(password, user.password);
+        if (!isPasswordValid) {
+            // Incorrect password
+            return res.status(401).json(api_statuses_const_1.statuses['0051']);
+        }
+        const isClientProfile = yield (0, user_repositories_1.isClientProfileCreated)(user._id);
+        if (!isClientProfile) {
+            return res.status(401).json(api_statuses_const_1.statuses['0104']);
+        }
+        if (req.from === 'mobile') {
+            const isVerified = yield (0, user_repositories_1.isClientVerified)(user._id);
+            if (!isVerified) {
+                res.status(401).json(api_statuses_const_1.statuses['0055']);
+                return;
+            }
+        }
+        activity_event_1.emitter.emit(activity_enum_1.EventName.LOGIN, {
+            user: user._id,
+            description: activity_enum_1.ActivityType.LOGIN_SAVED
+        });
+        // Generate a JWT token for authentication
+        // Return the access token in the response
+        return res.status(200).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses['00']), { data: {
+                owner: user.username,
+                token: (0, crypto_util_1.encrypt)({
+                    username: user.username,
+                    password: user.password
+                }, secrets === null || secrets === void 0 ? void 0 : secrets.PASSWORD_SECRET)
+            } }));
+    }
+    catch (error) {
+        console.log('@login error', error);
+        res.status(401).json(api_statuses_const_1.statuses['0900']);
+    }
+});
+exports.encryptLogin = encryptLogin;
+const encryptedLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // Check if there are any validation errors
+    const error = new validation_util_1.RequestValidator().decryptLogin(req.body);
+    if (error) {
+        res.status(400).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses['501']), { error: error.details[0].message.replace(/['"]/g, '') }));
+        return;
+    }
+    const { content } = req.body;
+    const secrets = yield (0, aws_service_1.getAwsSecrets)();
+    if ((0, methods_util_1.isEmpty)(secrets)) {
+        res.status(401).json(api_statuses_const_1.statuses['0300']);
+        return;
+    }
+    const decryptedToken = (0, crypto_util_1.decrypt)(content, secrets === null || secrets === void 0 ? void 0 : secrets.PASSWORD_SECRET);
+    if (!decryptedToken) {
+        return res.status(401).json(api_statuses_const_1.statuses["10020"]);
+    }
+    const { username, password } = decryptedToken;
+    const user = yield user_model_1.User.findOne({ username, password }).exec();
+    console.log(user);
+    if (!user) {
+        return res.status(401).json(api_statuses_const_1.statuses['10020']);
+    }
+    return res.status(200).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses['00']), { data: (0, crypto_util_1.encrypt)((0, jwt_util_1.generateJwt)(user._id, secrets === null || secrets === void 0 ? void 0 : secrets.JWT_SECRET_KEY), secrets === null || secrets === void 0 ? void 0 : secrets.CRYPTO_SECRET) }));
+});
+exports.encryptedLogin = encryptedLogin;
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const error = new validation_util_1.RequestValidator().registerAPI(req.body);
@@ -163,14 +257,14 @@ const verifyToken = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         const secrets = yield (0, aws_service_1.getAwsSecrets)();
         const decryptedToken = (0, crypto_util_1.decrypt)(token, secrets === null || secrets === void 0 ? void 0 : secrets.CRYPTO_SECRET);
         if (!decryptedToken) {
-            return res.status(401).json({ error: 'Failed to authenticate token.' });
+            return res.status(401).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses['10020']), { error: 'Failed to authenticate token.' }));
         }
         if ((0, methods_util_1.isEmpty)(secrets === null || secrets === void 0 ? void 0 : secrets.JWT_SECRET_KEY)) {
-            return res.status(401).json({ error: 'Aws S3 JWT_SECRET is incorrect/invalid' });
+            return res.status(401).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses['10010']), { error: 'Aws S3 JWT_SECRET is incorrect/invalid' }));
         }
         jsonwebtoken_1.default.verify(decryptedToken, secrets === null || secrets === void 0 ? void 0 : secrets.JWT_SECRET_KEY, (err, decoded) => {
             if (err) {
-                return res.status(401).json({ error: 'Failed to authenticate token.' });
+                return res.status(401).json(Object.assign(Object.assign({}, api_statuses_const_1.statuses['10020']), { error: 'Failed to authenticate token.' }));
             }
             return res.status(200).json(api_statuses_const_1.statuses['00']);
         });

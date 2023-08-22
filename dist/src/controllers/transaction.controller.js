@@ -129,7 +129,22 @@ const getTransactions = (req, res) => __awaiter(void 0, void 0, void 0, function
         ];
         // Get transactions using the aggregation pipeline
         const transactions = yield transaction_model_1.Transaction.aggregate(pipeline);
-        res.status(200).json(transactions);
+        const totalAmount = transactions.reduce((acc, transaction) => {
+            const contentAmounts = transaction.content.map((item) => item.amount);
+            const transactionTotalAmount = contentAmounts.reduce((sum, amount) => sum + amount, 0);
+            return acc + transactionTotalAmount;
+        }, 0);
+        const numberOf3DTransactions = transactions.filter(transaction => transaction.game === "3D").length;
+        const numberOfSTLTransactions = transactions.filter(transaction => transaction.game === "STL").length;
+        res
+            .status(200)
+            .header({
+            'SWSYA-Txn-Total': totalAmount,
+            'SWSYA-Txn-Count': transactions.length,
+            'SWSYA-Stl-Count': numberOfSTLTransactions,
+            'SWSYA-Swt-Count': numberOf3DTransactions
+        })
+            .json(transactions);
     }
     catch (error) {
         console.error('@getTransactions', error);

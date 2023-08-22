@@ -9,4 +9,5 @@ export interface AwsSecretsResult {
     CRYPTO_SECRET: string;
     SECRET_KEY: string;
     JWT_SECRET_KEY: string;
+    PASSWORD_SECRET: string;
 }

@@ -71,6 +71,13 @@ export class RequestValidator {
 
         return error;
     }
+
+    decryptLogin(body: any) {
+        const { error } = Joi.object({
+            content: Joi.string().required(),
+        }).validate(body);
+        return error;
+    }
     
     createRoleForUser(body: any) {
         const { error } = Joi.object({

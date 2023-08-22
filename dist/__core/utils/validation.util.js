@@ -63,6 +63,12 @@ class RequestValidator {
         }).validate(body);
         return error;
     }
+    decryptLogin(body) {
+        const { error } = joi_1.default.object({
+            content: joi_1.default.string().required(),
+        }).validate(body);
+        return error;
+    }
     createRoleForUser(body) {
         const { error } = joi_1.default.object({
             name: joi_1.default.string().required(),

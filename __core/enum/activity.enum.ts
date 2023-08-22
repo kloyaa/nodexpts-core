@@ -8,12 +8,13 @@ export enum EventName  {
 }
 
 export enum ActivityType {
-    ROLE_CREATION = 'Role created',
-    PROFILE_CREATION = 'Profile created',
-    PROFILE_VERIFICATION = 'Account approved',
-    LOGIN = 'Login',
-    LOGIN_FAILURE = 'Login failed',
-    LOGOUT = 'Logout',
+    ROLE_CREATION = 'Role created.',
+    PROFILE_CREATION = 'Profile created.',
+    PROFILE_VERIFICATION = 'Account approved.',
+    LOGIN = 'Login successfully..',
+    LOGIN_SAVED = 'Saved login.',
+    LOGIN_FAILURE = 'Login failed.',
+    LOGOUT = 'Logout successfully',
     ACCOUNT_CREATION = 'Account created',
     WITHDRAWAL_CREATION = 'WITHDRAWAL_CREATION',
     DEPOSIT_CREATION = 'DEPOSIT_CREATION',

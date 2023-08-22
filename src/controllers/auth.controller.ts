@@ -90,6 +90,123 @@ export const login = async (req: Request & { from: string }, res: Response): Pro
   }
 }
 
+export const encryptLogin = async (req: Request & { from: string }, res: Response): Promise<Response<any>> => {
+  try {
+    // Check if there are any validation errors
+    const error = new RequestValidator().loginAPI(req.body)
+    if (error) {
+      res.status(400).json({
+        ...statuses['501'],
+        error: error.details[0].message.replace(/['"]/g, '')
+      })
+      return
+    }
+    const { username, password } = req.body
+
+    // Get secrets
+    const secrets = await getAwsSecrets()
+    if (isEmpty(secrets)) {
+      res.status(401).json(statuses['0300'])
+      return
+    }
+
+    // Check if the user exists based on the username
+    const user: IUser | null = await User.findOne({ username }).exec()
+    if (!user) {
+      // User not found
+      res.status(401).json(statuses['0051'])
+      return
+    }
+
+    // Find the user's role based on the user ID
+    const userRole = await UserRole.findOne({ user: user._id }).exec()
+
+    // Check if the user has the admin role
+    if ((userRole.name === 'client') && req.from !== 'mobile') {
+      return res.status(401).json(statuses['0057'])
+    } else if ((userRole.name === 'admin') && req.from !== 'web') {
+      return res.status(401).json(statuses['0057'])
+    }
+
+    // Compare the provided password with the stored hashed password
+    const isPasswordValid: boolean = await bcrypt.compare(password, user.password)
+    if (!isPasswordValid) {
+      // Incorrect password
+      return res.status(401).json(statuses['0051'])
+    }
+
+    const isClientProfile = await isClientProfileCreated(user._id)
+    if (!isClientProfile) {
+      return res.status(401).json(statuses['0104'])
+    }
+
+    if (req.from === 'mobile') {
+      const isVerified = await isClientVerified(user._id)
+      if (!isVerified) {
+        res.status(401).json(statuses['0055'])
+        return
+      }
+    }
+
+    emitter.emit(EventName.LOGIN, {
+      user: user._id,
+      description: ActivityType.LOGIN_SAVED
+    } as IActivity)
+
+    // Generate a JWT token for authentication
+    // Return the access token in the response
+    return res.status(200).json({
+      ...statuses['00'],
+      data: {
+        owner: user.username,
+        token: encrypt({ 
+          username: user.username, 
+          password: user.password 
+        }, secrets?.PASSWORD_SECRET)
+      }
+    })
+  } catch (error) {
+    console.log('@login error', error)
+    res.status(401).json(statuses['0900'])
+  }
+}
+
+export const encryptedLogin = async (req: Request & { from: string }, res: Response): Promise<Response<any>> => {
+  // Check if there are any validation errors
+  const error = new RequestValidator().decryptLogin(req.body)
+  if (error) {
+    res.status(400).json({
+      ...statuses['501'],
+      error: error.details[0].message.replace(/['"]/g, '')
+    })
+    return
+  }
+  const { content } = req.body;
+
+  const secrets = await getAwsSecrets()
+  if (isEmpty(secrets)) {
+    res.status(401).json(statuses['0300'])
+    return
+  }
+      
+  const decryptedToken = decrypt(content, secrets?.PASSWORD_SECRET as string)
+  if(!decryptedToken) {
+    return res.status(401).json(statuses["10020"]);
+  }
+
+  const { username, password } = decryptedToken;
+  const user: IUser | null = await User.findOne({ username, password }).exec()
+  console.log(user)
+  if (!user) {
+    return res.status(401).json(statuses['10020'])
+  }
+
+  return res.status(200).json({
+    ...statuses['00'],
+    data: encrypt(generateJwt(user._id, secrets?.JWT_SECRET_KEY), secrets?.CRYPTO_SECRET)
+  })
+}
+
 export const register = async (req: Request & { from: string }, res: Response): Promise<Response<any>> => {
   try {
     const error = new RequestValidator().registerAPI(req.body)
@@ -185,16 +302,25 @@ export const verifyToken = async (req: Request & { from: string }, res: Response
 
     const decryptedToken = decrypt(token, secrets?.CRYPTO_SECRET)
     if (!decryptedToken) {
-      return res.status(401).json({ error: 'Failed to authenticate token.' })
+      return res.status(401).json({ 
+        ...statuses['10020'],
+        error: 'Failed to authenticate token.' 
+      })
     }
 
     if (isEmpty(secrets?.JWT_SECRET_KEY)) {
-      return res.status(401).json({ error: 'Aws S3 JWT_SECRET is incorrect/invalid' })
+      return res.status(401).json({ 
+        ...statuses['10010'],
+        error: 'Aws S3 JWT_SECRET is incorrect/invalid' 
+      })
     }
 
     jwt.verify(decryptedToken, secrets?.JWT_SECRET_KEY, (err: any, decoded: any) => {
       if (err) {
-        return res.status(401).json({ error: 'Failed to authenticate token.' })
+        return res.status(401).json({ 
+          ...statuses['10020'],
+          error: 'Failed to authenticate token.' 
+        })
       }
       return res.status(200).json(statuses['00'])
     })

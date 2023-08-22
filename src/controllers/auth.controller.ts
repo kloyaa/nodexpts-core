@@ -196,7 +196,6 @@ export const encryptedLogin = async (req: Request & { from: string }, res: Respo
 
   const { username, password } = decryptedToken;
   const user: IUser | null = await User.findOne({ username, password }).exec()
-  console.log(user)
   if (!user) {
     return res.status(401).json(statuses['10020'])
   }
@@ -269,7 +268,6 @@ export const register = async (req: Request & { from: string }, res: Response): 
       })
     }
 
-    console.log(userRole)
     await userRole.save()
 
     emitter.emit(EventName.ACCOUNT_CREATION, {
@@ -325,7 +323,7 @@ export const verifyToken = async (req: Request & { from: string }, res: Response
       return res.status(200).json(statuses['00'])
     })
   } catch (error) {
-    console.log(error)
+    console.log('@verifyToken error', error)
     res.status(401).json(statuses['0900'])
   }
 }

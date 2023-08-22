@@ -176,7 +176,6 @@ const encryptedLogin = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
     const { username, password } = decryptedToken;
     const user = yield user_model_1.User.findOne({ username, password }).exec();
-    console.log(user);
     if (!user) {
         return res.status(401).json(api_statuses_const_1.statuses['10020']);
     }
@@ -232,7 +231,6 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 description: 'N/A'
             });
         }
-        console.log(userRole);
         yield userRole.save();
         activity_event_1.emitter.emit(activity_enum_1.EventName.ACCOUNT_CREATION, {
             user: createdUser._id,
@@ -270,7 +268,7 @@ const verifyToken = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         });
     }
     catch (error) {
-        console.log(error);
+        console.log('@verifyToken error', error);
         res.status(401).json(api_statuses_const_1.statuses['0900']);
     }
 });

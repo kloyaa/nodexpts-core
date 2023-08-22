@@ -49,7 +49,8 @@ function runApp() {
                 'SWSYA-Txn-Total',
                 'SWSYA-Txn-Count',
                 'SWSYA-Stl-Count',
-                'SWSYA-Swt-Count'
+                'SWSYA-Swt-Count',
+                'SWSYA-Txn-Revenue'
             ]
         })); // Enable CORS for all routes
         app.use(express_1.default.json());

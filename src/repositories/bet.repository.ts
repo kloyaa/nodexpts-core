@@ -213,7 +213,6 @@ export const getBetResultRepository = async (schedule?: string | undefined) => {
     ? schedule
     : getISODate()
 
-  console.log(formattedSchedule)
   const aggregationPipeline: any[] = [
     {
       $match: {

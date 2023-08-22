@@ -432,7 +432,6 @@ const getAllBets = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             }
         });
         const result = yield bet_model_1.Bet.aggregate(pipeline);
-        console.log(result);
         if (result.length === 0) {
             res.status(200).json([]);
             return;

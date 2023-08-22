@@ -487,7 +487,6 @@ export const getAllBets = async (req: Request & { user?: any }, res: Response): 
     )
 
     const result = await Bet.aggregate(pipeline)
-    console.log(result)
     if (result.length === 0) {
       res.status(200).json([])
       return

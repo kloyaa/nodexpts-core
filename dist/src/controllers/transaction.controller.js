@@ -140,6 +140,7 @@ const getTransactions = (req, res) => __awaiter(void 0, void 0, void 0, function
             .status(200)
             .header({
             'SWSYA-Txn-Total': totalAmount,
+            'SWSYA-Txn-Revenue': totalAmount * Number(process.env.REVENUE_PERCENT) || 0,
             'SWSYA-Txn-Count': transactions.length,
             'SWSYA-Stl-Count': numberOfSTLTransactions,
             'SWSYA-Swt-Count': numberOf3DTransactions

@@ -189,7 +189,6 @@ const getBetResultRepository = (schedule) => __awaiter(void 0, void 0, void 0, f
     const formattedSchedule = schedule
         ? schedule
         : (0, date_util_1.getISODate)();
-    console.log(formattedSchedule);
     const aggregationPipeline = [
         {
             $match: {

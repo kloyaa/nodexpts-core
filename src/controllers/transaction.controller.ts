@@ -146,6 +146,7 @@ export const getTransactions = async (req: Request, res: Response): Promise<Resp
     .status(200)
     .header({ 
       'SWSYA-Txn-Total': totalAmount, 
+      'SWSYA-Txn-Revenue': totalAmount * Number(process.env.REVENUE_PERCENT) || 0, 
       'SWSYA-Txn-Count': transactions.length,
       'SWSYA-Stl-Count': numberOfSTLTransactions,
       'SWSYA-Swt-Count': numberOf3DTransactions

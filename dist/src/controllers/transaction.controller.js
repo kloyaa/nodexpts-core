@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTransactionsByUser = exports.getTransactions = exports.getTransactionsByDate = exports.getTransactionByReference = exports.createTransaction = void 0;
+exports.getTransactionsByUser = exports.getTransactionsByToken = exports.getTransactions = exports.getTransactionsByDate = exports.getTransactionByReference = exports.createTransaction = void 0;
 const transaction_model_1 = require("../models/transaction.model");
 const api_statuses_const_1 = require("../const/api-statuses.const");
 const validation_util_1 = require("../../__core/utils/validation.util");
@@ -153,9 +153,9 @@ const getTransactions = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.getTransactions = getTransactions;
-const getTransactionsByUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getTransactionsByToken = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const error = new validation_util_1.RequestValidator().getTransactionsByUser(req.query);
+        const error = new validation_util_1.RequestValidator().getTransactionsByTokenAPI(req.query);
         if (error) {
             res.status(400).json(Object.assign(Object.assign({}, api_statuses_const_2.statuses['501']), { error: error.details[0].message.replace(/['"]/g, '') }));
             return;
@@ -180,6 +180,52 @@ const getTransactionsByUser = (req, res) => __awaiter(void 0, void 0, void 0, fu
     catch (error) {
         console.error('@getTransactionsByDate', error);
         res.status(500).json(api_statuses_const_1.statuses['0900']);
+    }
+});
+exports.getTransactionsByToken = getTransactionsByToken;
+const getTransactionsByUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const error = new validation_util_1.RequestValidator().getTransactionsByUserAPI(req.query);
+        if (error) {
+            res.status(400).json(Object.assign(Object.assign({}, api_statuses_const_2.statuses['501']), { error: error.details[0].message.replace(/['"]/g, '') }));
+            return;
+        }
+        let query = {};
+        if (req.query.schedule !== undefined) {
+            // Convert the date string to a JavaScript Date object
+            query = {
+                schedule: new Date(req.query.schedule)
+            };
+        }
+        // Get transactions that match the date
+        const transactions = yield transaction_model_1.Transaction.find(Object.assign(Object.assign({}, query), { game: req.query.game, user: req.query.user }));
+        let total = 0;
+        transactions.forEach(transaction => {
+            transaction.content.forEach((item) => {
+                total += item.amount;
+            });
+        });
+        // Get transactions using the aggregation pipeline
+        const totalAmount = transactions.reduce((acc, transaction) => {
+            const contentAmounts = transaction.content.map((item) => item.amount);
+            const transactionTotalAmount = contentAmounts.reduce((sum, amount) => sum + amount, 0);
+            return acc + transactionTotalAmount;
+        }, 0);
+        const numberOf3DTransactions = transactions.filter(transaction => transaction.game === "3D").length;
+        const numberOfSTLTransactions = transactions.filter(transaction => transaction.game === "STL").length;
+        return res
+            .status(200)
+            .header({
+            'SWSYA-Txn-Total': totalAmount,
+            'SWSYA-Txn-Count': transactions.length,
+            'SWSYA-Stl-Count': numberOfSTLTransactions,
+            'SWSYA-Swt-Count': numberOf3DTransactions
+        })
+            .json(transactions);
+    }
+    catch (error) {
+        console.error('@getTransactionsByDate', error);
+        return res.status(500).json(api_statuses_const_1.statuses['0900']);
     }
 });
 exports.getTransactionsByUser = getTransactionsByUser;

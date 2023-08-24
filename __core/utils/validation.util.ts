@@ -103,10 +103,20 @@ export class RequestValidator {
         return error;
     }
 
-    getTransactionsByUser(query: any) {
+    getTransactionsByTokenAPI(query: any) {
         const { error } = Joi.object({
             schedule: Joi.string().optional(),
             game: Joi.string().valid("3D", "STL").required(),
+        }).validate(query);
+
+        return error;
+    }
+
+    getTransactionsByUserAPI(query: any) {
+        const { error } = Joi.object({
+            schedule: Joi.string().optional(),
+            game: Joi.string().valid("3D", "STL").required(),
+            user: Joi.string().required(),
         }).validate(query);
 
         return error;

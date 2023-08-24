@@ -89,10 +89,18 @@ class RequestValidator {
         }).validate(body);
         return error;
     }
-    getTransactionsByUser(query) {
+    getTransactionsByTokenAPI(query) {
         const { error } = joi_1.default.object({
             schedule: joi_1.default.string().optional(),
             game: joi_1.default.string().valid("3D", "STL").required(),
+        }).validate(query);
+        return error;
+    }
+    getTransactionsByUserAPI(query) {
+        const { error } = joi_1.default.object({
+            schedule: joi_1.default.string().optional(),
+            game: joi_1.default.string().valid("3D", "STL").required(),
+            user: joi_1.default.string().required(),
         }).validate(query);
         return error;
     }

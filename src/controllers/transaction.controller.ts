@@ -158,9 +158,9 @@ export const getTransactions = async (req: Request, res: Response): Promise<Resp
   }
 }
 
-export const getTransactionsByUser = async (req: Request & { user?: any }, res: Response): Promise<Response<any>> => {
+export const getTransactionsByToken = async (req: Request & { user?: any }, res: Response): Promise<Response<any>> => {
   try {
-    const error = new RequestValidator().getTransactionsByUser(req.query)
+    const error = new RequestValidator().getTransactionsByTokenAPI(req.query)
     if (error) {
       res.status(400).json({
         ...statuses['501'],
@@ -195,5 +195,64 @@ export const getTransactionsByUser = async (req: Request & { user?: any }, res: 
   } catch (error) {
     console.error('@getTransactionsByDate', error)
     res.status(500).json(betStatuses['0900'])
+  }
+}
+
+export const getTransactionsByUser = async (req: Request & { user?: any }, res: Response): Promise<Response<any>> => {
+  try {
+    const error = new RequestValidator().getTransactionsByUserAPI(req.query)
+    if (error) {
+      res.status(400).json({
+        ...statuses['501'],
+        error: error.details[0].message.replace(/['"]/g, '')
+      })
+      return
+    }
+
+    let query = {}
+    if (req.query.schedule !== undefined) {
+      // Convert the date string to a JavaScript Date object
+      query = {
+        schedule: new Date(req.query.schedule as string)
+      }
+    }
+
+    // Get transactions that match the date
+    const transactions = await Transaction.find({
+      ...query,
+      game: req.query.game,
+      user: req.query.user
+    })
+
+    let total = 0
+    transactions.forEach(transaction => {
+      transaction.content.forEach((item: IBet) => {
+        total += item.amount
+      })
+    })
+
+    // Get transactions using the aggregation pipeline
+
+    const totalAmount = transactions.reduce((acc, transaction) => {
+      const contentAmounts = transaction.content.map((item: any) => item.amount);
+      const transactionTotalAmount = contentAmounts.reduce((sum: any, amount: any) => sum + amount, 0);
+      return acc + transactionTotalAmount;
+    }, 0);
+
+    const numberOf3DTransactions = transactions.filter(transaction => transaction.game === "3D").length;
+    const numberOfSTLTransactions = transactions.filter(transaction => transaction.game === "STL").length;
+
+    return res
+      .status(200)
+      .header({ 
+        'SWSYA-Txn-Total': totalAmount, 
+        'SWSYA-Txn-Count': transactions.length,
+        'SWSYA-Stl-Count': numberOfSTLTransactions,
+        'SWSYA-Swt-Count': numberOf3DTransactions
+      })
+      .json(transactions)
+  } catch (error) {
+    console.error('@getTransactionsByDate', error)
+    return res.status(500).json(betStatuses['0900'])
   }
 }

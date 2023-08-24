@@ -191,10 +191,14 @@ const getTransactionsByUser = (req, res) => __awaiter(void 0, void 0, void 0, fu
             return;
         }
         let query = {};
-        if (req.query.schedule !== undefined) {
-            // Convert the date string to a JavaScript Date object
+        if (req.query.schedule !== "" && req.query.schedule !== undefined) {
             query = {
                 schedule: new Date(req.query.schedule)
+            };
+        }
+        if (req.query.time !== "") {
+            query = {
+                time: req.query.time
             };
         }
         // Get transactions that match the date

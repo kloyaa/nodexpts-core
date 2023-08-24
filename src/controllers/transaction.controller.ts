@@ -2,7 +2,7 @@ import { type Request, type Response } from 'express'
 import { Transaction } from '../models/transaction.model'
 import { statuses as betStatuses } from '../const/api-statuses.const'
 import { RequestValidator } from '../../__core/utils/validation.util'
-import { type IBet, ITransaction } from '../interface/bet.interface'
+import { type IBet } from '../interface/bet.interface'
 import { type PipelineStage } from 'mongoose'
 import { statuses } from '../../__core/const/api-statuses.const'
 
@@ -210,10 +210,15 @@ export const getTransactionsByUser = async (req: Request & { user?: any }, res: 
     }
 
     let query = {}
-    if (req.query.schedule !== undefined) {
-      // Convert the date string to a JavaScript Date object
+    if (req.query.schedule !== "" && req.query.schedule !== undefined) {
       query = {
         schedule: new Date(req.query.schedule as string)
+      }
+    }
+
+    if (req.query.time !== "") {
+      query = {
+        time: req.query.time
       }
     }
 

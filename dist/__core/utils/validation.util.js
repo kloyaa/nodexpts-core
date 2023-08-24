@@ -98,6 +98,7 @@ class RequestValidator {
     }
     getTransactionsByUserAPI(query) {
         const { error } = joi_1.default.object({
+            time: joi_1.default.optional(),
             schedule: joi_1.default.string().optional(),
             game: joi_1.default.string().valid("3D", "STL").required(),
             user: joi_1.default.string().required(),

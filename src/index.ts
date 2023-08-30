@@ -3,6 +3,8 @@ import cors from 'cors'
 import helmet from 'helmet'
 import connectDB from '../__core/utils/db.util'
 import path from 'path'
+import fs from "fs"
+import https from "https";
 
 import authRoute from './routes/auth.route'
 import profileRoute from './routes/profile.route'
@@ -30,6 +32,11 @@ const envVars = {
 }
 
 async function runApp () {
+  console.log(__dirname)
+  const privateKey = fs.readFileSync(__dirname + '/certs/key.pem', 'utf8');
+  const certificate = fs.readFileSync(__dirname + '/certs/certificate.pem', 'utf8');
+  const credentials = { key: privateKey, cert: certificate };
+
   // Middleware
   app.use(helmet()) // Apply standard security headers
   app.use(cors({
@@ -61,13 +68,13 @@ async function runApp () {
   // Connect to MongoDB
   connectDB()
 
-  // Start the server
+  // Start the HTTPS server
   app.listen(Number(envVars.PORT) || 5000, () => {
     console.log({
       Environment: envVars.ENVIRONMENT,
-      Port: envVars.PORT
-    })
-  })
+      Port: envVars.PORT,
+    });
+  });
 }
 
 runApp()

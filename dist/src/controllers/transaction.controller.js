@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTransactionsByUser = exports.getTransactionsByToken = exports.getTransactions = exports.getTransactionsByDate = exports.getTransactionByReference = exports.createTransaction = void 0;
+exports.getTransactionData = exports.getTransactionsByUser = exports.getTransactionsByToken = exports.getTransactions = exports.getTransactionsByDate = exports.getTransactionByReference = exports.createTransaction = void 0;
 const transaction_model_1 = require("../models/transaction.model");
 const api_statuses_const_1 = require("../const/api-statuses.const");
 const validation_util_1 = require("../../__core/utils/validation.util");
@@ -233,4 +233,32 @@ const getTransactionsByUser = (req, res) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.getTransactionsByUser = getTransactionsByUser;
+const getTransactionData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const pipeline = [
+        {
+            $group: {
+                _id: "$schedule",
+                total: { $sum: "$total" } // Assuming the field name is "total"
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                schedule: {
+                    $dateToString: {
+                        format: "%Y-%m-%d",
+                        date: "$_id"
+                    }
+                },
+                total: 1
+            }
+        },
+        {
+            $sort: { schedule: 1 }
+        }
+    ];
+    const transactions = yield transaction_model_1.Transaction.aggregate(pipeline);
+    return res.status(200).json(transactions);
+});
+exports.getTransactionData = getTransactionData;
 //# sourceMappingURL=transaction.controller.js.map

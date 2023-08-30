@@ -261,3 +261,32 @@ export const getTransactionsByUser = async (req: Request & { user?: any }, res: 
     return res.status(500).json(betStatuses['0900'])
   }
 }
+
+export const getTransactionData = async (req: Request & { user?: any }, res: Response) => {
+  const pipeline: PipelineStage[] = [
+    {
+      $group: {
+        _id: "$schedule",
+        total: { $sum: "$total" } // Assuming the field name is "total"
+      }
+    },
+    {
+      $project: {
+        _id: 0,
+        schedule: {
+          $dateToString: {
+            format: "%Y-%m-%d",
+            date: "$_id"
+          }
+        },
+        total: 1
+      }
+    },
+    {
+      $sort: { schedule: 1 }
+    }
+  ]
+
+  const transactions = await Transaction.aggregate(pipeline)
+  return res.status(200).json(transactions);
+}

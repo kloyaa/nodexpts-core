@@ -9,11 +9,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTransactionData = exports.getTransactionsByUser = exports.getTransactionsByToken = exports.getTransactions = exports.getTransactionsByDate = exports.getTransactionByReference = exports.createTransaction = void 0;
+exports.getMyTransactionData = exports.getTransactionData = exports.getTransactionsByUser = exports.getTransactionsByToken = exports.getTransactions = exports.getTransactionsByDate = exports.getTransactionByReference = exports.createTransaction = void 0;
 const transaction_model_1 = require("../models/transaction.model");
 const api_statuses_const_1 = require("../const/api-statuses.const");
 const validation_util_1 = require("../../__core/utils/validation.util");
 const api_statuses_const_2 = require("../../__core/const/api-statuses.const");
+const mongodb_1 = require("mongodb");
 // Create a new transaction
 const createTransaction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -261,4 +262,38 @@ const getTransactionData = (req, res) => __awaiter(void 0, void 0, void 0, funct
     return res.status(200).json(transactions);
 });
 exports.getTransactionData = getTransactionData;
+const getMyTransactionData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(req.query.user);
+    const pipeline = [
+        {
+            $match: {
+                user: new mongodb_1.ObjectId(req.query.user)
+            }
+        },
+        {
+            $group: {
+                _id: "$schedule",
+                total: { $sum: "$total" }
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                schedule: {
+                    $dateToString: {
+                        format: "%Y-%m-%d",
+                        date: "$_id"
+                    }
+                },
+                total: 1
+            }
+        },
+        {
+            $sort: { schedule: 1 }
+        }
+    ];
+    const transactions = yield transaction_model_1.Transaction.aggregate(pipeline);
+    return res.status(200).json(transactions);
+});
+exports.getMyTransactionData = getMyTransactionData;
 //# sourceMappingURL=transaction.controller.js.map

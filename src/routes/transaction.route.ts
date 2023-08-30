@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { createTransaction, getTransactionByReference, getTransactions, getTransactionsByUser, getTransactionsByToken, getTransactionData } from '../controllers/transaction.controller'
+import { createTransaction, getTransactionByReference, getTransactions, getTransactionsByUser, getTransactionsByToken, getTransactionData, getMyTransactionData } from '../controllers/transaction.controller'
 import { isAuthenticated } from '../../__core/middlewares/jwt.middleware'
 
 const router = Router()
@@ -32,6 +32,11 @@ router.get('/transaction/v1/client',
 router.get('/transaction/v1/data', 
   isAuthenticated, 
   getTransactionData
+)
+
+router.get('/me/transaction/v1/data', 
+  isAuthenticated, 
+  getMyTransactionData
 )
 
 export default router

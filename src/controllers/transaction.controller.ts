@@ -5,6 +5,7 @@ import { RequestValidator } from '../../__core/utils/validation.util'
 import { type IBet } from '../interface/bet.interface'
 import { type PipelineStage } from 'mongoose'
 import { statuses } from '../../__core/const/api-statuses.const'
+import { ObjectId } from 'mongodb'
 
 // Create a new transaction
 export const createTransaction = async (req: Request & { user?: any }, res: Response): Promise<Response<any>> => {
@@ -268,6 +269,41 @@ export const getTransactionData = async (req: Request & { user?: any }, res: Res
       $group: {
         _id: "$schedule",
         total: { $sum: "$total" } // Assuming the field name is "total"
+      }
+    },
+    {
+      $project: {
+        _id: 0,
+        schedule: {
+          $dateToString: {
+            format: "%Y-%m-%d",
+            date: "$_id"
+          }
+        },
+        total: 1
+      }
+    },
+    {
+      $sort: { schedule: 1 }
+    }
+  ]
+
+  const transactions = await Transaction.aggregate(pipeline)
+  return res.status(200).json(transactions);
+}
+
+export const getMyTransactionData = async (req: Request, res: Response) => {
+  console.log(req.query.user)
+  const pipeline: PipelineStage[] = [
+    {
+      $match: {
+        user: new ObjectId(req.query.user as string)
+      }
+    },
+    {
+      $group: {
+        _id: "$schedule",
+        total: { $sum: "$total" } 
       }
     },
     {

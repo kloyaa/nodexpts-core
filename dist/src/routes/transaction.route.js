@@ -10,5 +10,6 @@ router.get('/transaction/v1/all', jwt_middleware_1.isAuthenticated, transaction_
 router.get('/transaction/v1/me', jwt_middleware_1.isAuthenticated, transaction_controller_1.getTransactionsByToken);
 router.get('/transaction/v1/client', jwt_middleware_1.isAuthenticated, transaction_controller_1.getTransactionsByUser);
 router.get('/transaction/v1/data', jwt_middleware_1.isAuthenticated, transaction_controller_1.getTransactionData);
+router.get('/me/transaction/v1/data', jwt_middleware_1.isAuthenticated, transaction_controller_1.getMyTransactionData);
 exports.default = router;
 //# sourceMappingURL=transaction.route.js.map

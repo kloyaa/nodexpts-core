@@ -17,7 +17,6 @@ const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
 const db_util_1 = __importDefault(require("../__core/utils/db.util"));
 const path_1 = __importDefault(require("path"));
-const fs_1 = __importDefault(require("fs"));
 const auth_route_1 = __importDefault(require("./routes/auth.route"));
 const profile_route_1 = __importDefault(require("./routes/profile.route"));
 const bet_route_1 = __importDefault(require("./routes/bet.route"));
@@ -43,10 +42,6 @@ const envVars = {
 };
 function runApp() {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log(__dirname);
-        const privateKey = fs_1.default.readFileSync(__dirname + '/certs/key.pem', 'utf8');
-        const certificate = fs_1.default.readFileSync(__dirname + '/certs/certificate.pem', 'utf8');
-        const credentials = { key: privateKey, cert: certificate };
         // Middleware
         app.use((0, helmet_1.default)()); // Apply standard security headers
         app.use((0, cors_1.default)({
